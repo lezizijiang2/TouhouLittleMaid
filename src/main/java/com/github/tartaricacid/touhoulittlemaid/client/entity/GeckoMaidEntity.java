@@ -4,6 +4,7 @@ import com.github.tartaricacid.touhoulittlemaid.TouhouLittleMaid;
 import com.github.tartaricacid.touhoulittlemaid.api.entity.IMaid;
 import com.github.tartaricacid.touhoulittlemaid.client.animation.gecko.AnimationManager;
 import com.github.tartaricacid.touhoulittlemaid.client.resource.pojo.MaidModelInfo;
+import com.github.tartaricacid.touhoulittlemaid.compat.immersivemelodies.ImmersiveMelodiesCompat;
 import com.github.tartaricacid.touhoulittlemaid.geckolib3.core.AnimatableEntity;
 import com.github.tartaricacid.touhoulittlemaid.geckolib3.core.controller.AnimationController;
 import com.github.tartaricacid.touhoulittlemaid.geckolib3.core.event.predicate.AnimationEvent;
@@ -29,12 +30,11 @@ public class GeckoMaidEntity<T extends Mob> extends AnimatableEntity<T> {
     private static final int FPS = 60;
 
     private final IMaid maid;
-    private MaidModelInfo maidInfo;
     private final Vector3f headRot = new Vector3f();
-
+    private final MaidState<T> state;
+    private MaidModelInfo maidInfo;
     private float currentTick = -1;
     private boolean modelDirty = false;
-    private final MaidState<T> state;
 
     public GeckoMaidEntity(T mob, IMaid maid) {
         super(mob, FPS);
@@ -76,16 +76,18 @@ public class GeckoMaidEntity<T extends Mob> extends AnimatableEntity<T> {
         List extraData = animationEvent.getExtraData();
         MolangParser parser = GeckoLibCache.getInstance().parser;
         if (!Minecraft.getInstance().isPaused() && extraData.size() == 1 && extraData.get(0) instanceof EntityModelData data) {
-            //AnimationRegister.setParserValue(animationEvent, parser, data, this.maid);
             var update = super.setCustomAnimations(context, animationEvent);
             AnimatedGeoModel currentModel = this.getCurrentModel();
-            if (currentModel != null && currentModel.head() != null) {
-                IBone head = currentModel.head();
-                if (update) {
-                    this.headRot.set(head.getRotationX(), head.getRotationY(), 0);
+            if (currentModel != null) {
+                if (currentModel.head() != null) {
+                    IBone head = currentModel.head();
+                    if (update) {
+                        this.headRot.set(head.getRotationX(), head.getRotationY(), 0);
+                    }
+                    head.setRotationX(this.headRot.x() + (float) Math.toRadians(data.headPitch));
+                    head.setRotationY(this.headRot.y() + (float) Math.toRadians(data.netHeadYaw));
                 }
-                head.setRotationX(this.headRot.x() + (float) Math.toRadians(data.headPitch));
-                head.setRotationY(this.headRot.y() + (float) Math.toRadians(data.netHeadYaw));
+                ImmersiveMelodiesCompat.setGeckoAngles(maid, currentModel.head(), currentModel.hat(), currentModel.leftArm(), currentModel.rightArm());
             }
             return update;
         } else {
