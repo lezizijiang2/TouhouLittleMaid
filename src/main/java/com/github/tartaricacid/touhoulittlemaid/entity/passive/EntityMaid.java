@@ -876,8 +876,11 @@ public class EntityMaid extends TamableAnimal implements CrossbowAttackMob, IMai
         if (this.getOffhandItem().getItem() instanceof FireworkRocketItem) {
             return this.getOffhandItem();
         }
+        if (!(this.getMainHandItem().getItem() instanceof ProjectileWeaponItem weaponItem)) {
+            return ItemStack.EMPTY;
+        }
         CombinedInvWrapper handler = this.getAvailableInv(true);
-        int slot = ItemsUtil.findStackSlot(handler, ((CrossbowItem) this.getMainHandItem().getItem()).getAllSupportedProjectiles());
+        int slot = ItemsUtil.findStackSlot(handler, weaponItem.getAllSupportedProjectiles());
         if (slot < 0) {
             // 不存在时，返回空
             return ItemStack.EMPTY;
