@@ -1,9 +1,9 @@
 package com.github.tartaricacid.touhoulittlemaid.client.renderer.entity;
 
+import com.github.tartaricacid.touhoulittlemaid.compat.oculus.OculusCompat;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.entity.projectile.MaidFishingHook;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Matrix3f;
 import com.mojang.math.Matrix4f;
 import com.mojang.math.Vector3f;
@@ -91,6 +91,9 @@ public class MaidFishingHookRenderer<T extends MaidFishingHook> extends EntityRe
         PoseStack.Pose lasted = poseStack.last();
         for (int i = 0; i <= 16; ++i) {
             stringVertex(x, y, z, lineConsumer, lasted, fraction(i), fraction(i + 1), colors[0], colors[1], colors[2]);
+        }
+        if (OculusCompat.isOculusInstalled()) {
+            lineConsumer.vertex(0.0, 0.0, 0.0).color(0, 0, 0, 255).normal(0.0F, 0.0F, 0.0F).endVertex();
         }
     }
 
