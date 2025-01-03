@@ -102,6 +102,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.BaseFireBlock;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -182,6 +183,7 @@ public class EntityMaid extends TamableAnimal implements CrossbowAttackMob, IMai
     static final EntityDataAccessor<Integer> PICKUP_TYPE = SynchedEntityData.defineId(EntityMaid.class, EntityDataSerializers.INT);
     static final EntityDataAccessor<Boolean> OPEN_DOOR = SynchedEntityData.defineId(EntityMaid.class, EntityDataSerializers.BOOLEAN);
     static final EntityDataAccessor<Boolean> OPEN_FENCE_GATE = SynchedEntityData.defineId(EntityMaid.class, EntityDataSerializers.BOOLEAN);
+    static final EntityDataAccessor<Boolean> ACTIVE_CLIMBING = SynchedEntityData.defineId(EntityMaid.class, EntityDataSerializers.BOOLEAN);
 
     /**
      * 开辟空间给任务存储使用,也便于附属模组存储数据
@@ -1949,4 +1951,60 @@ public class EntityMaid extends TamableAnimal implements CrossbowAttackMob, IMai
         return handItemsForAnimation;
     }
 
+    @Override
+    public Vec3 handleOnClimbable(Vec3 deltaMovement) {
+        Vec3 oriDelta = super.handleOnClimbable(deltaMovement);
+        // 主动爬行过程中严禁水平方向偏移，防止摔伤，y轴保持原样
+        if (this.onClimbable()) {
+            Vec3 vec3 = this.position();
+            if (vec3.x() % 1 != 0.5D || vec3.z() % 1 != 0.5) {
+                BlockPos currentPosition = this.blockPosition().mutable();
+                Vec3 centerPos = Vec3.atBottomCenterOf(currentPosition);
+                this.moveTo(centerPos.x, vec3.y(), centerPos.z);
+            }
+            oriDelta = new Vec3(0, oriDelta.y, 0);
+        }
+        return oriDelta;
+    }
+
+    /**
+     * 爬梯子状态加上路径判断
+     */
+    @Override
+    public boolean onClimbable() {
+        boolean result = super.onClimbable();
+        if (level.isClientSide) {
+            // 客户端检测不到路径，所以客户端需要额外返回
+            return result;
+        }
+        if (result) {
+            // 爬梯时，禁止旋转
+            this.getLastClimbablePos().ifPresent(climbablePos -> {
+                BlockState blockState = this.level.getBlockState(climbablePos);
+                blockState.getOptionalValue(HorizontalDirectionalBlock.FACING).ifPresent(direction -> {
+                    int yRot = direction.getOpposite().get2DDataValue() * 90;
+                    this.setYRot(yRot);
+                    this.setYHeadRot(yRot);
+                });
+            });
+        }
+        return result && !this.getNavigation().isDone();
+    }
+
+    /**
+     * 略微修改原版的方法，禁用了向上的动力源
+     */
+    @Override
+    public Vec3 handleRelativeFrictionAndCalculateMovement(Vec3 deltaMovement, float friction) {
+        this.moveRelative(this.getFrictionInfluencedSpeed(friction), deltaMovement);
+        this.setDeltaMovement(this.handleOnClimbable(this.getDeltaMovement()));
+        this.move(MoverType.SELF, this.getDeltaMovement());
+        Vec3 vec3 = this.getDeltaMovement();
+        boolean isCollisionOrJump = this.horizontalCollision || this.jumping;
+        // 如果是爬行，就需要禁用这个由于碰撞箱等的向上的动力源
+        if (isCollisionOrJump && !this.onClimbable()) {
+            vec3 = new Vec3(vec3.x, 0.2, vec3.z);
+        }
+        return vec3;
+    }
 }

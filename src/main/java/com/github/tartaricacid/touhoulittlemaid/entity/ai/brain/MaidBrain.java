@@ -86,7 +86,8 @@ public final class MaidBrain {
 
     private static void registerCoreGoals(Brain<EntityMaid> brain) {
         Pair<Integer, Behavior<? super EntityMaid>> swim = Pair.of(0, new Swim(0.8f));
-        Pair<Integer, Behavior<? super EntityMaid>> look = Pair.of(0, new LookAtTargetSink(45, 90));
+        Pair<Integer, Behavior<? super EntityMaid>> climb = Pair.of(0, new MaidClimbTask());
+        Pair<Integer, BehaviorControl<? super EntityMaid>> look = Pair.of(0, new LookAtTargetSink(45, 90));
         Pair<Integer, Behavior<? super EntityMaid>> maidPanic = Pair.of(1, new MaidPanicTask());
         Pair<Integer, Behavior<? super EntityMaid>> maidAwait = Pair.of(1, new MaidAwaitTask());
         Pair<Integer, Behavior<? super EntityMaid>> interactWithDoor = Pair.of(2, new MaidInteractWithDoor());
@@ -96,7 +97,7 @@ public final class MaidBrain {
         Pair<Integer, Behavior<? super EntityMaid>> pickupItem = Pair.of(10, new MaidPickupEntitiesTask(EntityMaid::isPickup, 0.6f));
         Pair<Integer, Behavior<? super EntityMaid>> clearSleep = Pair.of(99, new MaidClearSleepTask());
 
-        brain.addActivity(Activity.CORE, ImmutableList.of(swim, look, maidPanic, maidAwait, interactWithDoor, walkToTarget, followOwner, healSelf, pickupItem, clearSleep));
+        brain.addActivity(Activity.CORE, ImmutableList.of(swim, climb, look, maidPanic, maidAwait, interactWithDoor, walkToTarget, followOwner, healSelf, pickupItem, clearSleep));
     }
 
     private static void registerIdleGoals(Brain<EntityMaid> brain) {
