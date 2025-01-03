@@ -241,6 +241,18 @@ public abstract class GeoReplacedEntityRenderer<T extends LivingEntity, E extend
             pPoseStack.mulPose(Vector3f.YP.rotationDegrees(((float) pEntityLiving.tickCount + pPartialTicks) * 75.0F));
             pPoseStack.mulPose(Vector3f.XP.rotationDegrees(90.0F + pEntityLiving.getXRot()));
         }
+
+        updateSwimRotations(pEntityLiving, pPoseStack, pPartialTicks);
+    }
+
+    private <T extends LivingEntity> void updateSwimRotations(T pEntityLiving, PoseStack pPoseStack, float pPartialTicks) {
+        float f = pEntityLiving.getSwimAmount(pPartialTicks);
+        float f3 = pEntityLiving.isInWater() || pEntityLiving.isInFluidType((fluidType, height) -> pEntityLiving.canSwimInFluidType(fluidType)) ? -90.0F - pEntityLiving.getXRot() : -90.0F;
+        float f4 = Mth.lerp(f, 0.0F, f3);
+        pPoseStack.mulPose(Axis.XP.rotationDegrees(f4));
+        if (pEntityLiving.isVisuallySwimming()) {
+            pPoseStack.translate(0.0F, -1.0F, 0.3F);
+        }
     }
 
     protected boolean isVisible(LivingEntity entity) {

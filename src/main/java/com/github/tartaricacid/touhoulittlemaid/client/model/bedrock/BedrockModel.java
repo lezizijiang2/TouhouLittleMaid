@@ -259,6 +259,7 @@ public class BedrockModel<T extends LivingEntity> extends EntityModel<T> {
                 IMaid maid = IMaid.convert(mob);
                 if (maid != null) {
                     setupMaidAnim(maid, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, invocable);
+                    updateSwimAnim(entityIn, ageInTicks, netHeadYaw, headPitch);
                     ImmersiveMelodiesCompat.setAngles(maid, this.hasHead() ? this.getHead() : null, this.getHat(),
                             this.hasLeftArm() ? this.getArm(HumanoidArm.LEFT) : null,
                             this.hasRightArm() ? this.getArm(HumanoidArm.RIGHT) : null);
@@ -269,6 +270,36 @@ public class BedrockModel<T extends LivingEntity> extends EntityModel<T> {
                 setupChairAnim((EntityChair) entityIn, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, invocable);
             }
         }
+    }
+
+    private void updateSwimAnim(T entityIn, float ageInTicks, float netHeadYaw, float headPitch) {
+        boolean flag = entityIn.getFallFlyingTicks() > 4;
+        boolean flag1 = entityIn.isVisuallySwimming();
+        this.getHead().yRot = netHeadYaw * ((float)Math.PI / 180F);
+        if (flag) {
+            this.getHead().xRot = (-(float)Math.PI / 4F);
+        } else if (entityIn.getSwimAmount(ageInTicks) > 0.0F) {
+            if (flag1) {
+                this.getHead().xRot = this.rotlerpRad(entityIn.getSwimAmount(ageInTicks), this.getHead().xRot, (-(float)Math.PI / 4F));
+            } else {
+                this.getHead().xRot = this.rotlerpRad(entityIn.getSwimAmount(ageInTicks), this.getHead().xRot, headPitch * ((float)Math.PI / 180F));
+            }
+        } else {
+            this.getHead().xRot = headPitch * ((float)Math.PI / 180F);
+        }
+    }
+
+    private float rotlerpRad(float pAngle, float pMaxAngle, float pMul) {
+        float f = (pMul - pMaxAngle) % ((float)Math.PI * 2F);
+        if (f < -(float)Math.PI) {
+            f += ((float)Math.PI * 2F);
+        }
+
+        if (f >= (float)Math.PI) {
+            f -= ((float)Math.PI * 2F);
+        }
+
+        return pMaxAngle + pAngle * f;
     }
 
     @Override

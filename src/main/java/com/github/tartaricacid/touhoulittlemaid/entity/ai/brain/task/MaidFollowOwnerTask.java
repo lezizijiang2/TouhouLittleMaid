@@ -32,7 +32,7 @@ public class MaidFollowOwnerTask extends Behavior<EntityMaid> {
         LivingEntity owner = maid.getOwner();
         int startDistance = (int) maid.getRestrictRadius() - 2;
         int minTeleportDistance = startDistance + 4;
-        if (ownerStateConditions(owner) && maidStateConditions(maid) && !maid.closerThan(owner, startDistance)) {
+        if (ownerStateConditions(owner) && maidStateConditions(maid) && !maid.closerThan(owner, startDistance) && !maid.isGoToBreathArea()) {
             if (!maid.closerThan(owner, minTeleportDistance)) {
                 teleportToOwner(maid, owner);
             } else if (!ownerIsWalkTarget(maid, owner)) {
@@ -75,8 +75,7 @@ public class MaidFollowOwnerTask extends Behavior<EntityMaid> {
 
     private boolean canTeleportTo(EntityMaid maid, BlockPos pos) {
         BlockPathTypes pathNodeType = WalkNodeEvaluator.getBlockPathTypeStatic(maid.level, pos.mutable());
-        // Fixme: 水面也可以传送
-        if (pathNodeType == BlockPathTypes.WALKABLE) {
+        if (pathNodeType == BlockPathTypes.WALKABLE || pathNodeType == BlockPathTypes.WATER) {
             BlockPos blockPos = pos.subtract(maid.blockPosition());
             return maid.level.noCollision(maid, maid.getBoundingBox().move(blockPos));
         }

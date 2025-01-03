@@ -86,12 +86,34 @@ public class GeckoMaidEntity<T extends Mob> extends AnimatableEntity<T> {
                     }
                     head.setRotationX(this.headRot.x() + (float) Math.toRadians(data.headPitch));
                     head.setRotationY(this.headRot.y() + (float) Math.toRadians(data.netHeadYaw));
+
+                    updateSwimAnim(context, data, head);
                 }
                 ImmersiveMelodiesCompat.setGeckoAngles(maid, currentModel.head(), currentModel.hat(), currentModel.leftArm(), currentModel.rightArm());
             }
             return update;
         } else {
             return super.setCustomAnimations(context, animationEvent);
+        }
+    }
+
+    private void updateSwimAnim(AnimationContext<?> context, EntityModelData data, IBone head) {
+        float partialTick = context.mc().getPartialTick();
+        Mob entityIn = maid.asEntity();
+        boolean flag = entityIn.getFallFlyingTicks() > 4;
+        boolean flag1 = entityIn.isVisuallySwimming();
+        head.setRotationY(-(this.headRot.y + data.netHeadYaw * ((float)Math.PI / 180F)));
+
+        if (flag) {
+            this.headRot.x = -(-(float)Math.PI / 4F);
+        } else if (entityIn.getSwimAmount(partialTick) > 0.0F) {
+            if (flag1) {
+                head.setRotationX(-(this.headRot.x + this.rotlerpRad(entityIn.getSwimAmount(partialTick), this.headRot.x, (-(float)Math.PI / 4F))));
+            } else {
+                this.headRot.x = -this.rotlerpRad(entityIn.getSwimAmount(partialTick), this.headRot.x, data.headPitch * ((float)Math.PI / 180F));
+            }
+        } else {
+            this.headRot.x = -data.headPitch * ((float)Math.PI / 180F);
         }
     }
 
@@ -131,6 +153,19 @@ public class GeckoMaidEntity<T extends Mob> extends AnimatableEntity<T> {
             return true;
         }
         return false;
+    }
+
+    private float rotlerpRad(float pAngle, float pMaxAngle, float pMul) {
+        float f = (pMul - pMaxAngle) % ((float)Math.PI * 2F);
+        if (f < -(float)Math.PI) {
+            f += ((float)Math.PI * 2F);
+        }
+
+        if (f >= (float)Math.PI) {
+            f -= ((float)Math.PI * 2F);
+        }
+
+        return pMaxAngle + pAngle * f;
     }
 
     public IMaid getMaid() {

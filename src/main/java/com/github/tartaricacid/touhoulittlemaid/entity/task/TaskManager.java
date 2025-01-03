@@ -32,6 +32,7 @@ public final class TaskManager {
         manager.add(new TaskBowAttack());
         manager.add(new TaskCrossBowAttack());
         manager.add(new TaskDanmakuAttack());
+        manager.add(new TaskTridentAttack());
 
         // TacZ 兼容
         TacCompat.initAndAddGunTask(manager);

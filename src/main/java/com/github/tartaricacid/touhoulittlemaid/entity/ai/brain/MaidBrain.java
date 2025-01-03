@@ -10,7 +10,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Pair;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.behavior.*;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -85,7 +87,14 @@ public final class MaidBrain {
     }
 
     private static void registerCoreGoals(Brain<EntityMaid> brain) {
-        Pair<Integer, Behavior<? super EntityMaid>> swim = Pair.of(0, new Swim(0.8f));
+        Pair<Integer, Behavior<? super EntityMaid>> swim = Pair.of(0, new Swim(0.8f) {
+            // 在水下的时候禁止被动跳跃
+            @Override
+            protected boolean canStillUse(ServerLevel pLevel, Mob pEntity, long pGameTime) {
+                return super.canStillUse(pLevel, pEntity, pGameTime) && !pEntity.isUnderWater() && pEntity.getNavigation().isDone();
+            }
+        });
+        Pair<Integer, BehaviorControl<? super EntityMaid>> breathAir = Pair.of(0, new MaidBreathAirTask());
         Pair<Integer, Behavior<? super EntityMaid>> climb = Pair.of(0, new MaidClimbTask());
         Pair<Integer, BehaviorControl<? super EntityMaid>> look = Pair.of(0, new LookAtTargetSink(45, 90));
         Pair<Integer, Behavior<? super EntityMaid>> maidPanic = Pair.of(1, new MaidPanicTask());
@@ -97,7 +106,7 @@ public final class MaidBrain {
         Pair<Integer, Behavior<? super EntityMaid>> pickupItem = Pair.of(10, new MaidPickupEntitiesTask(EntityMaid::isPickup, 0.6f));
         Pair<Integer, Behavior<? super EntityMaid>> clearSleep = Pair.of(99, new MaidClearSleepTask());
 
-        brain.addActivity(Activity.CORE, ImmutableList.of(swim, climb, look, maidPanic, maidAwait, interactWithDoor, walkToTarget, followOwner, healSelf, pickupItem, clearSleep));
+        brain.addActivity(Activity.CORE, ImmutableList.of(swim, climb, breathAir, look, maidPanic, maidAwait, interactWithDoor, walkToTarget, followOwner, healSelf, pickupItem, clearSleep));
     }
 
     private static void registerIdleGoals(Brain<EntityMaid> brain) {

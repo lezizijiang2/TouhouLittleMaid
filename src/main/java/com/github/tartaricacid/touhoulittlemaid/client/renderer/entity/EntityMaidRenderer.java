@@ -19,6 +19,7 @@ import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
@@ -107,6 +108,20 @@ public class EntityMaidRenderer extends MobRenderer<Mob, BedrockModel<Mob>> {
             poseStack.translate(-0.375, 0.8325, 0.375);
             poseStack.mulPose(Vector3f.ZN.rotationDegrees(65));
             poseStack.mulPose(Vector3f.YN.rotationDegrees(-80));
+        }
+
+        if (!this.mainInfo.isGeckoModel()) {
+            updateSwimRotations(mob, poseStack, pPartialTicks);
+        }
+    }
+
+    private static void updateSwimRotations(Mob mob, PoseStack poseStack, float pPartialTicks) {
+        float f = mob.getSwimAmount(pPartialTicks);
+        float f3 = mob.isInWater() || mob.isInFluidType((fluidType, height) -> mob.canSwimInFluidType(fluidType)) ? -90.0F - mob.getXRot() : -90.0F;
+        float f4 = Mth.lerp(f, 0.0F, f3);
+        poseStack.mulPose(Axis.XP.rotationDegrees(f4));
+        if (mob.isVisuallySwimming()) {
+            poseStack.translate(0.0F, -1.0F, 0.3F);
         }
     }
 
