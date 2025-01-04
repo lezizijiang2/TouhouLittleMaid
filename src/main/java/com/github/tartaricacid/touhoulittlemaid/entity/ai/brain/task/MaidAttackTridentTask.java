@@ -9,12 +9,11 @@ import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.entity.ai.behavior.BehaviorUtils;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ProjectileWeaponItem;
 import net.minecraft.world.item.TridentItem;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 
 public class MaidAttackTridentTask extends Behavior<EntityMaid> {
+    private static final int MAX_DISTANCE = 30;
     private boolean strafingClockwise;
     private boolean strafingBackwards;
     private int strafingTime = -1;
@@ -30,27 +29,26 @@ public class MaidAttackTridentTask extends Behavior<EntityMaid> {
     @Override
     protected boolean checkExtraStartConditions(ServerLevel worldIn, EntityMaid owner) {
         return this.hasTrident(owner) &&
-                owner.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET)
-                        .filter(Entity::isAlive)
-                        .filter(e -> owner.isWithinRestriction(e.blockPosition()))
-                        .isPresent();
+               owner.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET)
+                       .filter(Entity::isAlive)
+                       .filter(e -> owner.isWithinRestriction(e.blockPosition()))
+                       .isPresent();
     }
 
     @Override
     protected void tick(ServerLevel worldIn, EntityMaid owner, long gameTime) {
-        owner.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).ifPresent((target) -> {
-            int maxAttackDistance = 30;
+        owner.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).ifPresent(target -> {
             double distance = owner.distanceTo(target);
 
             // 如果在最大攻击距离之内，而且看见的时长足够长
-            if (distance < maxAttackDistance) {
+            if (distance < MAX_DISTANCE) {
                 ++this.strafingTime;
             } else {
                 this.strafingTime = -1;
             }
 
             // 如果攻击时间也足够长，随机对走位方向和前后走位进行反转
-            // 原版10tick就可以投出去
+            // 原版 10tick 就可以投出去
             if (this.strafingTime >= 10) {
                 if (owner.getRandom().nextFloat() < 0.3) {
                     this.strafingClockwise = !this.strafingClockwise;
@@ -63,12 +61,16 @@ public class MaidAttackTridentTask extends Behavior<EntityMaid> {
 
             // 如果攻击时间大于 -1
             if (this.strafingTime > -1) {
-                boolean isSafeArea = !(!owner.isUnderWater() && EnchantmentHelper.hasChanneling(owner.getMainHandItem())
-                        && owner.level.isThundering() && owner.closerThan(target, Math.max(target.getBbWidth(), target.getBbHeight()) + 1.5));
+                boolean hasChanneling = EnchantmentHelper.hasChanneling(owner.getMainHandItem());
+                boolean canUseChanneling = owner.level.isThundering() && !owner.isUnderWater() && hasChanneling;
+                boolean tooClose = owner.closerThan(target, Math.max(target.getBbWidth(), target.getBbHeight()));
+                // 引雷附魔在生物处于雷雨处且不在水中时会触发，需要保证安全距离
+                boolean inDangerArea = canUseChanneling && tooClose;
+
                 // 依据距离远近决定是否前后走位
-                if (distance > maxAttackDistance * 0.5) {
+                if (distance > MAX_DISTANCE * 0.5) {
                     this.strafingBackwards = false;
-                } else if (distance < maxAttackDistance * 0.2 || !isSafeArea) {
+                } else if (distance < MAX_DISTANCE * 0.2 || inDangerArea) {
                     this.strafingBackwards = true;
                 }
 
@@ -99,10 +101,7 @@ public class MaidAttackTridentTask extends Behavior<EntityMaid> {
         return this.checkExtraStartConditions(worldIn, entityIn);
     }
 
-    // 必须要有忠诚附魔，硬性条件(虽说代码上可不用强制要求...)
-    // 不然女仆有时miss了，三叉戟飞的太远...
-    // 捡不回来，玩家：我三叉戟呢:(
     private boolean hasTrident(EntityMaid maid) {
-        return maid.getMainHandItem().getItem() instanceof TridentItem && EnchantmentHelper.getLoyalty(maid.getMainHandItem()) > 0;
+        return maid.getMainHandItem().getItem() instanceof TridentItem;
     }
 }

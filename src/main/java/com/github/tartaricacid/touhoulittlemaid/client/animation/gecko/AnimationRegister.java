@@ -17,6 +17,7 @@ public class AnimationRegister {
     public static void registerAnimationState() {
         register("death", ILoopType.EDefaultLoopTypes.PLAY_ONCE, Priority.HIGHEST, (maid, event) -> maid.asEntity().isDeadOrDying());
         register("sleep", Priority.HIGHEST, (maid, event) -> maid.asEntity().getPose() == Pose.SLEEPING);
+        register("swim", Priority.HIGHEST, (maid, event) -> maid.asEntity().isVisuallySwimming());
 
         register("ladder_up", Priority.HIGHEST, (maid, event) -> maid.onClimbable() && getVerticalSpeed(maid) > 0);
         register("ladder_stillness", Priority.HIGHEST, (maid, event) -> maid.onClimbable() && getVerticalSpeed(maid) == 0);

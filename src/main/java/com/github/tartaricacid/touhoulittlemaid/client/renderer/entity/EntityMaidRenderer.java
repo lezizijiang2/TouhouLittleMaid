@@ -4,6 +4,7 @@ import com.github.tartaricacid.touhoulittlemaid.TouhouLittleMaid;
 import com.github.tartaricacid.touhoulittlemaid.api.ILittleMaid;
 import com.github.tartaricacid.touhoulittlemaid.api.entity.IMaid;
 import com.github.tartaricacid.touhoulittlemaid.api.event.client.RenderMaidEvent;
+import com.github.tartaricacid.touhoulittlemaid.client.animation.HardcodedAnimationManger;
 import com.github.tartaricacid.touhoulittlemaid.client.animation.script.GlWrapper;
 import com.github.tartaricacid.touhoulittlemaid.client.model.bedrock.BedrockModel;
 import com.github.tartaricacid.touhoulittlemaid.client.renderer.entity.layer.*;
@@ -19,7 +20,6 @@ import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
@@ -104,25 +104,16 @@ public class EntityMaidRenderer extends MobRenderer<Mob, BedrockModel<Mob>> {
     @Override
     protected void setupRotations(Mob mob, PoseStack poseStack, float pAgeInTicks, float pRotationYaw, float pPartialTicks) {
         super.setupRotations(mob, poseStack, pAgeInTicks, pRotationYaw, pPartialTicks);
+
+        // 抱起女仆时的旋转
         if (mob.getVehicle() instanceof Player && !this.mainInfo.isGeckoModel()) {
             poseStack.translate(-0.375, 0.8325, 0.375);
             poseStack.mulPose(Vector3f.ZN.rotationDegrees(65));
             poseStack.mulPose(Vector3f.YN.rotationDegrees(-80));
         }
 
-        if (!this.mainInfo.isGeckoModel()) {
-            updateSwimRotations(mob, poseStack, pPartialTicks);
-        }
-    }
-
-    private static void updateSwimRotations(Mob mob, PoseStack poseStack, float pPartialTicks) {
-        float f = mob.getSwimAmount(pPartialTicks);
-        float f3 = mob.isInWater() || mob.isInFluidType((fluidType, height) -> mob.canSwimInFluidType(fluidType)) ? -90.0F - mob.getXRot() : -90.0F;
-        float f4 = Mth.lerp(f, 0.0F, f3);
-        poseStack.mulPose(Axis.XP.rotationDegrees(f4));
-        if (mob.isVisuallySwimming()) {
-            poseStack.translate(0.0F, -1.0F, 0.3F);
-        }
+        // 其他时候的旋转
+        HardcodedAnimationManger.setupRotations(mob, poseStack, pAgeInTicks, pRotationYaw, pPartialTicks, this.mainInfo.isGeckoModel());
     }
 
     @Override

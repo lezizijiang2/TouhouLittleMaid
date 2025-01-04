@@ -607,7 +607,7 @@
   "task.touhou_little_maid.danmaku_attack.desc": "女仆会主动用弹幕攻击周围的敌对生物",
   "task.touhou_little_maid.danmaku_attack.condition.has_gohei": "主手持有博丽的御币",
   "task.touhou_little_maid.trident_attack.desc": "女仆会主动用三叉戟攻击周围的敌对生物",
-  "task.touhou_little_maid.trident_attack.condition.has_trident": "主手持有三叉戟并且三叉戟必须存在忠诚附魔",
+  "task.touhou_little_maid.trident_attack.condition.has_trident": "主手持有三叉戟",
   "task.touhou_little_maid.farm.desc": "女仆会主动种植、收获周围的普通作物",
   "task.touhou_little_maid.sugar_cane.desc": "女仆会主动种植、收获周围的甘蔗",
   "task.touhou_little_maid.melon.desc": "女仆会主动收获周围的瓜类",

@@ -1,7 +1,6 @@
 package com.github.tartaricacid.touhoulittlemaid.compat.immersivemelodies;
 
 import com.github.tartaricacid.touhoulittlemaid.geckolib3.geo.animated.AnimatedGeoBone;
-import immersive_melodies.client.animation.EntityModelAnimator;
 import immersive_melodies.client.animation.accessors.ModelAccessor;
 import net.minecraft.world.entity.Mob;
 
@@ -15,18 +14,13 @@ public class GeckoMaidArmsAndHeadAccessor implements ModelAccessor<Mob> {
     private final @Nullable AnimatedGeoBone leftArm;
     private final @Nullable AnimatedGeoBone rightArm;
 
-    private GeckoMaidArmsAndHeadAccessor(Mob maid, @Nullable AnimatedGeoBone head, @Nullable AnimatedGeoBone hat,
-                                         @Nullable AnimatedGeoBone leftArm, @Nullable AnimatedGeoBone rightArm) {
+    GeckoMaidArmsAndHeadAccessor(Mob maid, @Nullable AnimatedGeoBone head, @Nullable AnimatedGeoBone hat,
+                                 @Nullable AnimatedGeoBone leftArm, @Nullable AnimatedGeoBone rightArm) {
         this.maid = maid;
         this.head = head;
         this.hat = hat;
         this.leftArm = leftArm;
         this.rightArm = rightArm;
-    }
-
-    static void setAngles(Mob maid, @Nullable AnimatedGeoBone head, @Nullable AnimatedGeoBone hat,
-                          @Nullable AnimatedGeoBone leftArm, @Nullable AnimatedGeoBone rightArm) {
-        EntityModelAnimator.setAngles(new GeckoMaidArmsAndHeadAccessor(maid, head, hat, leftArm, rightArm));
     }
 
     @Override

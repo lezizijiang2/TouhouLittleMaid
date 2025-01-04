@@ -1,7 +1,6 @@
 package com.github.tartaricacid.touhoulittlemaid.compat.immersivemelodies;
 
 import com.github.tartaricacid.touhoulittlemaid.client.model.bedrock.BedrockPart;
-import immersive_melodies.client.animation.EntityModelAnimator;
 import immersive_melodies.client.animation.accessors.ModelAccessor;
 import net.minecraft.world.entity.Mob;
 
@@ -15,16 +14,12 @@ public class MaidArmsAndHeadAccessor implements ModelAccessor<Mob> {
     private final @Nullable BedrockPart leftArm;
     private final @Nullable BedrockPart rightArm;
 
-    private MaidArmsAndHeadAccessor(Mob maid, @Nullable BedrockPart head, @Nullable BedrockPart hat, @Nullable BedrockPart leftArm, @Nullable BedrockPart rightArm) {
+    MaidArmsAndHeadAccessor(Mob maid, @Nullable BedrockPart head, @Nullable BedrockPart hat, @Nullable BedrockPart leftArm, @Nullable BedrockPart rightArm) {
         this.maid = maid;
         this.head = head;
         this.hat = hat;
         this.leftArm = leftArm;
         this.rightArm = rightArm;
-    }
-
-    static void setAngles(Mob maid, @Nullable BedrockPart head, @Nullable BedrockPart hat, @Nullable BedrockPart leftArm, @Nullable BedrockPart rightArm) {
-        EntityModelAnimator.setAngles(new MaidArmsAndHeadAccessor(maid, head, hat, leftArm, rightArm));
     }
 
     @Override

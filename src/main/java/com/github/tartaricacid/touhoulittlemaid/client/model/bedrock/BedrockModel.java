@@ -2,6 +2,7 @@ package com.github.tartaricacid.touhoulittlemaid.client.model.bedrock;
 
 import com.github.tartaricacid.touhoulittlemaid.api.entity.IMaid;
 import com.github.tartaricacid.touhoulittlemaid.client.animation.CustomJsAnimationManger;
+import com.github.tartaricacid.touhoulittlemaid.client.animation.HardcodedAnimationManger;
 import com.github.tartaricacid.touhoulittlemaid.client.animation.inner.IAnimation;
 import com.github.tartaricacid.touhoulittlemaid.client.animation.script.EntityChairWrapper;
 import com.github.tartaricacid.touhoulittlemaid.client.animation.script.EntityMaidWrapper;
@@ -9,7 +10,6 @@ import com.github.tartaricacid.touhoulittlemaid.client.animation.script.ModelRen
 import com.github.tartaricacid.touhoulittlemaid.client.model.BedrockVersion;
 import com.github.tartaricacid.touhoulittlemaid.client.model.pojo.*;
 import com.github.tartaricacid.touhoulittlemaid.client.resource.CustomPackLoader;
-import com.github.tartaricacid.touhoulittlemaid.compat.immersivemelodies.ImmersiveMelodiesCompat;
 import com.github.tartaricacid.touhoulittlemaid.entity.item.EntityChair;
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -259,10 +259,8 @@ public class BedrockModel<T extends LivingEntity> extends EntityModel<T> {
                 IMaid maid = IMaid.convert(mob);
                 if (maid != null) {
                     setupMaidAnim(maid, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, invocable);
-                    updateSwimAnim(entityIn, ageInTicks, netHeadYaw, headPitch);
-                    ImmersiveMelodiesCompat.setAngles(maid, this.hasHead() ? this.getHead() : null, this.getHat(),
-                            this.hasLeftArm() ? this.getArm(HumanoidArm.LEFT) : null,
-                            this.hasRightArm() ? this.getArm(HumanoidArm.RIGHT) : null);
+                    // 硬编码动画
+                    HardcodedAnimationManger.playMaidAnimation(maid, modelMap, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
                 }
                 return;
             }
@@ -270,36 +268,6 @@ public class BedrockModel<T extends LivingEntity> extends EntityModel<T> {
                 setupChairAnim((EntityChair) entityIn, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, invocable);
             }
         }
-    }
-
-    private void updateSwimAnim(T entityIn, float ageInTicks, float netHeadYaw, float headPitch) {
-        boolean flag = entityIn.getFallFlyingTicks() > 4;
-        boolean flag1 = entityIn.isVisuallySwimming();
-        this.getHead().yRot = netHeadYaw * ((float)Math.PI / 180F);
-        if (flag) {
-            this.getHead().xRot = (-(float)Math.PI / 4F);
-        } else if (entityIn.getSwimAmount(ageInTicks) > 0.0F) {
-            if (flag1) {
-                this.getHead().xRot = this.rotlerpRad(entityIn.getSwimAmount(ageInTicks), this.getHead().xRot, (-(float)Math.PI / 4F));
-            } else {
-                this.getHead().xRot = this.rotlerpRad(entityIn.getSwimAmount(ageInTicks), this.getHead().xRot, headPitch * ((float)Math.PI / 180F));
-            }
-        } else {
-            this.getHead().xRot = headPitch * ((float)Math.PI / 180F);
-        }
-    }
-
-    private float rotlerpRad(float pAngle, float pMaxAngle, float pMul) {
-        float f = (pMul - pMaxAngle) % ((float)Math.PI * 2F);
-        if (f < -(float)Math.PI) {
-            f += ((float)Math.PI * 2F);
-        }
-
-        if (f >= (float)Math.PI) {
-            f -= ((float)Math.PI * 2F);
-        }
-
-        return pMaxAngle + pAngle * f;
     }
 
     @Override
@@ -380,15 +348,6 @@ public class BedrockModel<T extends LivingEntity> extends EntityModel<T> {
 
     public BedrockPart getHead() {
         return modelMap.get("head").getModelRenderer();
-    }
-
-    @Nullable
-    public BedrockPart getHat() {
-        ModelRendererWrapper hat = modelMap.get("hat");
-        if (hat != null) {
-            return hat.getModelRenderer();
-        }
-        return null;
     }
 
     public boolean hasLeftArm() {

@@ -87,7 +87,6 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.entity.ai.navigation.AmphibiousPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.CrossbowAttackMob;
@@ -110,7 +109,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.FluidState;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
@@ -192,8 +190,6 @@ public class EntityMaid extends TamableAnimal implements CrossbowAttackMob, IMai
      * 开辟空间给任务存储使用,也便于附属模组存储数据
      */
     private static final EntityDataAccessor<CompoundTag> TASK_DATA_SYNC = SynchedEntityData.defineId(EntityMaid.class, EntityDataSerializers.COMPOUND_TAG);
-    // 游泳碰撞箱
-    private static final EntityDimensions SWIMMING_DIMENSIONS = EntityDimensions.scalable(0.6F, 0.6F);
     private static final String TASK_TAG = "MaidTask";
     private static final String STRUCK_BY_LIGHTNING_TAG = "StruckByLightning";
     private static final String INVULNERABLE_TAG = "Invulnerable";
@@ -217,11 +213,10 @@ public class EntityMaid extends TamableAnimal implements CrossbowAttackMob, IMai
     private final MaidTaskDataMaps taskDataMaps = new MaidTaskDataMaps();
     private final FavorabilityManager favorabilityManager;
     private final MaidScriptBookManager scriptBookManager;
+    private final MaidSwimManager swimManager;
     private final SchedulePos schedulePos;
 
     public final ItemStack[] handItemsForAnimation = new ItemStack[]{ItemStack.EMPTY, ItemStack.EMPTY};
-    protected final MaidPathNavigation groundNavigation;
-    protected final AmphibiousPathNavigation waterNavigation;
     public boolean guiOpening = false;
     public MaidFishingHook fishing = null;
 
@@ -240,12 +235,6 @@ public class EntityMaid extends TamableAnimal implements CrossbowAttackMob, IMai
      * 女仆现在可以在前哨站生成，那么会打上这个标签
      */
     private boolean structureSpawn = false;
-    // 正在前往呼吸区域标志位
-    private boolean isGoToBreathArea = false;
-    // 正在食用可提供水下呼吸的食物标志位
-    private boolean isEatBreatheItem = false;
-    // 主动游泳标志位
-    private boolean wantToSwim = false;
 
     protected EntityMaid(EntityType<EntityMaid> type, Level world) {
         super(type, world);
@@ -254,9 +243,7 @@ public class EntityMaid extends TamableAnimal implements CrossbowAttackMob, IMai
         this.schedulePos = new SchedulePos(BlockPos.ZERO, world.dimension().location());
 
         this.moveControl = new MaidMoveControl(this);
-        this.groundNavigation = new MaidPathNavigation(this, world);
-        this.waterNavigation = new AmphibiousPathNavigation(this, world);
-        this.setPathfindingMalus(BlockPathTypes.WATER, 0.0F);
+        this.swimManager = new MaidSwimManager(this);
     }
 
     public EntityMaid(Level worldIn) {
@@ -1258,31 +1245,9 @@ public class EntityMaid extends TamableAnimal implements CrossbowAttackMob, IMai
         }
     }
 
-    // 控制饮用药水...
-    // 药水不属于食物,所以就走不通LivingEntity#eat
-    // 就只能由这个控制了
     @Override
     protected void completeUsingItem() {
-        if (this.isEatBreatheItem) {
-            this.isEatBreatheItem = false;
-        }
-        if (!this.level.isClientSide || this.isUsingItem()) {
-            if (!this.useItem.isEmpty() && this.isUsingItem() && this.useItem.getItem() instanceof PotionItem) {
-                net.minecraftforge.event.ForgeEventFactory.onItemUseFinish(this, this.useItem.copy(), getUseItemRemainingTicks(), this.useItem.finishUsingItem(this.level(), this));
-                this.triggerItemUseEffects(this.useItem, 16);
-                this.useItem.shrink(1);
-                // 原版硬编码返回玻璃瓶...没有用到craftingReamingItem
-                CombinedInvWrapper inv = this.getAvailableInv(true);
-                ItemStack leftStack = ItemHandlerHelper.insertItemStacked(inv, new ItemStack(Items.GLASS_BOTTLE), false);
-                // 如果背包满了，那就生成掉落物...
-                // 预防一些改动物品堆叠的模组
-                if (!leftStack.isEmpty()) {
-                    this.spawnAtLocation(leftStack);
-                }
-                this.stopUsingItem();
-                return;
-            }
-        }
+        this.getSwimManager().resetEatBreatheItem();
         super.completeUsingItem();
     }
 
@@ -2054,80 +2019,43 @@ public class EntityMaid extends TamableAnimal implements CrossbowAttackMob, IMai
         return vec3;
     }
 
+    public void setNavigation(PathNavigation navigation) {
+        this.navigation = navigation;
+    }
+
+    public MaidSwimManager getSwimManager() {
+        return swimManager;
+    }
+
     @Override
+    @SuppressWarnings("deprecation")
     public boolean isPushedByFluid() {
         return !this.isSwimming();
     }
 
     @Override
-    public void travel(Vec3 pTravelVector) {
-        if (this.isControlledByLocalInstance() && this.isInWater() && this.wantToSwim()) {
-            this.moveRelative(0.01F, pTravelVector);
+    public void travel(Vec3 travelVector) {
+        if (this.isControlledByLocalInstance() && this.isInWater() && this.getSwimManager().wantToSwim()) {
+            this.moveRelative(0.01F, travelVector);
             this.move(MoverType.SELF, this.getDeltaMovement());
-            this.setDeltaMovement(this.getDeltaMovement().scale(0.9D));
+            this.setDeltaMovement(this.getDeltaMovement().scale(0.9));
         } else {
-            super.travel(pTravelVector);
+            super.travel(travelVector);
         }
     }
 
-    public EntityDimensions getDimensions(Pose pPose) {
-        return pPose == Pose.SWIMMING ? SWIMMING_DIMENSIONS : super.getDimensions(pPose);
+    @Override
+    public EntityDimensions getDimensions(Pose pose) {
+        return pose == Pose.SWIMMING ? this.getSwimManager().getSwimmingDimensions() : super.getDimensions(pose);
     }
 
     @Override
     public void updateSwimming() {
-        if (!this.level.isClientSide) {
-            if (this.isEffectiveAi() && this.isInWater()) {
-                this.navigation = this.waterNavigation;
-            } else {
-                this.navigation = this.groundNavigation;
-                this.setWantToSwim(false);
-            }
-
-            this.updatePose();
-        }
-    }
-
-    // 更新游泳姿势->更新碰撞箱
-    private void updatePose() {
-        if (this.wantToSwim() && !this.onGround()) {
-            this.setSwimming(true);
-            this.setPose(Pose.SWIMMING);
-        } else {
-            this.setSwimming(false);
-            // 也许有更好的方式?
-            if (!this.isSleeping()) {
-                this.setPose(Pose.STANDING);
-            }
-        }
-    }
-
-    public void setWantToSwim(boolean pSearchingForLand) {
-        this.wantToSwim = pSearchingForLand;
+        this.getSwimManager().updateSwimming();
     }
 
     @Override
     public boolean isVisuallySwimming() {
         return this.isSwimming();
-    }
-
-    public boolean wantToSwim() {
-        return this.wantToSwim;
-    }
-
-    public boolean isGoToBreathArea() {
-        return isGoToBreathArea;
-    }
-
-    public void setGoToBreathArea(boolean goToBreathArea) {
-        isGoToBreathArea = goToBreathArea;
-    }
-
-    public boolean isEatBreatheItem() {
-        return isEatBreatheItem;
-    }
-
-    public void setEatBreatheItem(boolean eatBreatheItem) {
-        isEatBreatheItem = eatBreatheItem;
     }
 }

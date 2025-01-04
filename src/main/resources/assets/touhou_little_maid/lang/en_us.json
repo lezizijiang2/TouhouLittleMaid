@@ -607,7 +607,7 @@
   "task.touhou_little_maid.danmaku_attack.desc": "Maid will use danmaku to attack surrounding hostile mobs",
   "task.touhou_little_maid.danmaku_attack.condition.has_gohei": "Mainhand holds a hakurei's gohei",
   "task.touhou_little_maid.trident_attack.desc": "Maid will use trident to attack surrounding hostile mobs",
-  "task.touhou_little_maid.trident_attack.condition.has_trident": "Mainhand holds a trident and trident must has loyalty enchantment",
+  "task.touhou_little_maid.trident_attack.condition.has_trident": "Mainhand holds a trident",
   "task.touhou_little_maid.farm.desc": "Maid will plant or harvest normal crops around",
   "task.touhou_little_maid.sugar_cane.desc": "Maid will plant or harvest sugar cane around",
   "task.touhou_little_maid.melon.desc": "Maid will harvest melon around",
