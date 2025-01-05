@@ -86,6 +86,7 @@ import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.behavior.BehaviorUtils;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -1426,9 +1427,44 @@ public class EntityMaid extends TamableAnimal implements CrossbowAttackMob, IMai
         return path != null && path.canReach();
     }
 
+    /**
+     * @deprecated 给 BehaviorUtils.isWithinAttackRange() 用的 <br>
+     * 但是目前为了实现超远视距打击，已经不用原版提供的这个了 <br>
+     * 故这里返回 true 还是 false 都不影响了
+     */
     @Override
+    @Deprecated
     public boolean canFireProjectileWeapon(ProjectileWeaponItem shootableItem) {
         return getTask() instanceof IRangedAttackTask;
+    }
+
+    /**
+     * 因为原版默认的攻击识别范围是固定死的 16 格，但是一些远程武器我们希望获得超视距打击
+     * 通过修改此处来获得更远的攻击距离
+     */
+    public boolean canSee(LivingEntity target) {
+        if (this.getTask() instanceof IRangedAttackTask rangedTask) {
+            return rangedTask.canSee(this, target);
+        }
+        return BehaviorUtils.canSee(this, target);
+    }
+
+    /**
+     * 实体搜索范围
+     */
+    public AABB searchDimension() {
+        // 仅工作时，才搜索 task 的范围，避免性能压力
+        if (this.getScheduleDetail() == Activity.WORK) {
+            return this.getTask().searchDimension(this);
+        }
+        return TaskManager.getIdleTask().searchDimension(this);
+    }
+
+    /**
+     * 实体搜索范围的水平范围值
+     */
+    public float searchRadius() {
+        return this.getTask().searchRadius(this);
     }
 
     @Override

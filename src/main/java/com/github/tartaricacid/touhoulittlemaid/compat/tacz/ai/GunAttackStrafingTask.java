@@ -1,6 +1,5 @@
 package com.github.tartaricacid.touhoulittlemaid.compat.tacz.ai;
 
-import com.github.tartaricacid.touhoulittlemaid.config.subconfig.MaidConfig;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.google.common.collect.ImmutableMap;
 import com.tacz.guns.api.item.IGun;
@@ -46,7 +45,7 @@ public class GunAttackStrafingTask extends Behavior<EntityMaid> {
             float maxAttackDistance = owner.getRestrictRadius();
 
             // 如果在最大攻击距离（128）之内，而且看见的时长足够长
-            if (distance < MaidConfig.MAID_GUN_LONG_DISTANCE.get()) {
+            if (distance < owner.searchRadius()) {
                 ++this.strafingTime;
             } else {
                 this.strafingTime = -1;

@@ -4,6 +4,7 @@ import com.github.tartaricacid.touhoulittlemaid.TouhouLittleMaid;
 import com.github.tartaricacid.touhoulittlemaid.api.task.IAttackTask;
 import com.github.tartaricacid.touhoulittlemaid.api.task.IRangedAttackTask;
 import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.task.MaidAttackStrafingTask;
+import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.task.MaidRangedWalkToTarget;
 import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.task.MaidShootTargetTask;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.init.InitSounds;
@@ -14,12 +15,14 @@ import com.mojang.datafixers.util.Pair;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.behavior.*;
+import net.minecraft.world.entity.ai.behavior.BehaviorControl;
+import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.BowItem;
@@ -27,6 +30,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.phys.AABB;
 import net.minecraftforge.items.wrapper.CombinedInvWrapper;
 
 import javax.annotation.Nullable;
@@ -35,7 +39,9 @@ import java.util.function.Predicate;
 
 public class TaskBowAttack implements IRangedAttackTask {
     public static final ResourceLocation UID = new ResourceLocation(TouhouLittleMaid.MOD_ID, "ranged_attack");
-    private static final int MAX_STOP_ATTACK_DISTANCE = 16;
+
+    private static final int MAX_STOP_ATTACK_DISTANCE = 128; // TODO：临时修改，需要改为配置文件
+    private static final TargetingConditions DISTANCE_TARGET_CONDITIONS = TargetingConditions.forNonCombat().range(MAX_STOP_ATTACK_DISTANCE);
 
     @Override
     public ResourceLocation getUid() {
@@ -74,7 +80,7 @@ public class TaskBowAttack implements IRangedAttackTask {
 
     @Override
     public List<Pair<Integer, Behavior<? super EntityMaid>>> createRideBrainTasks(EntityMaid maid) {
-        Behavior<EntityMaid> supplementedTask = new StartAttacking<>(e -> hasBow(e) && hasArrow(e), IAttackTask::findFirstValidAttackTarget);
+        Behavior<EntityMaid> supplementedTask = new StartAttacking<>(e -> hasBow(e) && hasArrow(e), IRangedAttackTask::findFirstValidAttackTarget);
         Behavior<EntityMaid> findTargetTask = new StopAttackingIfTargetInvalid<>((target) -> !hasBow(maid) || !hasArrow(maid) || farAway(target, maid));
         Behavior<EntityMaid> shootTargetTask = new MaidShootTargetTask(2);
 
@@ -93,15 +99,43 @@ public class TaskBowAttack implements IRangedAttackTask {
             ItemStack mainHandItem = shooter.getMainHandItem();
             if (mainHandItem.getItem() instanceof BowItem) {
                 double x = target.getX() - shooter.getX();
-                double y = target.getBoundingBox().minY + target.getBbHeight() / 3.0F - entityArrow.position().y;
+                double y = target.getEyeY() - shooter.getEyeY();
                 double z = target.getZ() - shooter.getZ();
-                double pitch = Math.sqrt(x * x + z * z) * 0.15D;
-                entityArrow.shoot(x, y + pitch, z, 1.6F, 1);
+                // 依据距离调整箭速和不准确度
+                float distance = shooter.distanceTo(target);
+                float velocity = Mth.clamp(distance / 10f, 1.6f, 3.2f);
+                float inaccuracy = Mth.clamp(distance / 100f, 0, 0.9f);
+                // 射出的箭忽略重力，从而能让女仆百发百中
+                entityArrow.setNoGravity(true);
+                entityArrow.shoot(x, y, z, velocity, 1 - inaccuracy);
                 mainHandItem.hurtAndBreak(1, shooter, (maid) -> maid.broadcastBreakEvent(InteractionHand.MAIN_HAND));
                 shooter.playSound(SoundEvents.SKELETON_SHOOT, 1.0F, 1.0F / (shooter.getRandom().nextFloat() * 0.4F + 0.8F));
                 shooter.level.addFreshEntity(entityArrow);
             }
         }
+    }
+
+    @Override
+    public boolean canSee(EntityMaid maid, LivingEntity target) {
+        return DISTANCE_TARGET_CONDITIONS.test(maid, target);
+    }
+
+    @Override
+    public AABB searchDimension(EntityMaid maid) {
+        if (hasBow(maid)) {
+            float searchRange = this.searchRadius(maid);
+            if (maid.hasRestriction()) {
+                return new AABB(maid.getRestrictCenter()).inflate(searchRange);
+            } else {
+                return maid.getBoundingBox().inflate(searchRange);
+            }
+        }
+        return IRangedAttackTask.super.searchDimension(maid);
+    }
+
+    @Override
+    public float searchRadius(EntityMaid maid) {
+        return MAX_STOP_ATTACK_DISTANCE;
     }
 
     @Override
@@ -162,6 +196,6 @@ public class TaskBowAttack implements IRangedAttackTask {
     }
 
     private boolean farAway(LivingEntity target, EntityMaid maid) {
-        return maid.distanceTo(target) > MAX_STOP_ATTACK_DISTANCE;
+        return maid.distanceTo(target) > this.searchRadius(maid);
     }
 }
