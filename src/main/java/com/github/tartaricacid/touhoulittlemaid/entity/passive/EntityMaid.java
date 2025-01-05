@@ -2011,13 +2011,7 @@ public class EntityMaid extends TamableAnimal implements CrossbowAttackMob, IMai
         this.moveRelative(this.getFrictionInfluencedSpeed(friction), deltaMovement);
         this.setDeltaMovement(this.handleOnClimbable(this.getDeltaMovement()));
         this.move(MoverType.SELF, this.getDeltaMovement());
-        Vec3 vec3 = this.getDeltaMovement();
-        boolean isCollisionOrJump = this.horizontalCollision || this.jumping;
-        // 如果是爬行，就需要禁用这个由于碰撞箱等的向上的动力源
-        if (isCollisionOrJump && !this.onClimbable()) {
-            vec3 = new Vec3(vec3.x, 0.2, vec3.z);
-        }
-        return vec3;
+        return this.getDeltaMovement();
     }
 
     public void setNavigation(PathNavigation navigation) {
