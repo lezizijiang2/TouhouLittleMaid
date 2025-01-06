@@ -6,7 +6,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.behavior.Behavior;
-import net.minecraft.world.entity.ai.behavior.BehaviorUtils;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.item.TridentItem;
@@ -16,9 +15,9 @@ import java.util.Optional;
 
 public class MaidTridentTargetTask extends Behavior<EntityMaid> {
     /**
-     * 半秒的间隔使用时间，模拟忠诚后的三叉戟击中目标返回来所需要的时间，不然就太 IMBA 了...
+     * 一秒的间隔使用时间，模拟忠诚后的三叉戟击中目标返回来所需要的时间，不然就太 IMBA 了...
      */
-    private final int attackCooldown = 10;
+    private final int attackCooldown = 20;
     private int attackTime = -1;
     private int seeTime;
 
@@ -32,7 +31,7 @@ public class MaidTridentTargetTask extends Behavior<EntityMaid> {
         Optional<LivingEntity> memory = owner.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET);
         if (memory.isPresent()) {
             LivingEntity target = memory.get();
-            return hasTrident(owner) && BehaviorUtils.canSee(owner, target);
+            return hasTrident(owner) && owner.canSee(target);
         }
         return false;
     }
@@ -52,7 +51,7 @@ public class MaidTridentTargetTask extends Behavior<EntityMaid> {
         owner.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).ifPresent((target) -> {
             // 强行看见并朝向
             owner.getLookControl().setLookAt(target.getX(), target.getY(), target.getZ());
-            boolean canSee = BehaviorUtils.canSee(owner, target);
+            boolean canSee = owner.canSee(target);
             boolean seeTimeMoreThanZero = this.seeTime > 0;
 
             // 如果两者不一致，重置看见时间
@@ -75,14 +74,14 @@ public class MaidTridentTargetTask extends Behavior<EntityMaid> {
                     // 否则开始进行远程攻击
                     int ticksUsingItem = owner.getTicksUsingItem();
 
-                    // 物品最大使用计数大于 10 才可以
-                    // 如果有引雷，必须2格之外（安全范围，以免波及自身）
+                    // 物品最大使用计数大于 30 才可以
+                    // 如果有引雷，必须 6 格之外（安全范围，以免波及自身）
                     boolean hasChanneling = EnchantmentHelper.hasChanneling(owner.getMainHandItem());
                     boolean canUseChanneling = owner.level.isThundering() && !owner.isUnderWater() && hasChanneling;
-                    boolean tooClose = owner.closerThan(target, Math.max(target.getBbWidth(), target.getBbHeight()));
+                    boolean tooClose = owner.closerThan(target, 6);
                     // 引雷附魔在生物处于雷雨处且不在水中时会触发，需要保证安全距离
                     boolean inSafeArea = !(canUseChanneling && tooClose);
-                    if (ticksUsingItem >= 10 && inSafeArea) {
+                    if (ticksUsingItem >= 30 && inSafeArea) {
                         owner.stopUsingItem();
                         owner.performRangedAttack(target, 0);
                         this.attackTime = this.attackCooldown;

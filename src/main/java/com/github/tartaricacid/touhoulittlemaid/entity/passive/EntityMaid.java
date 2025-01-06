@@ -866,6 +866,24 @@ public class EntityMaid extends TamableAnimal implements CrossbowAttackMob, IMai
         this.shootCrossbowProjectile(this, target, projectileEntity, projectileAngle, 1.6F);
     }
 
+    /**
+     * 修改默认方法，让女仆能实现超远距离打击
+     */
+    @Override
+    public void shootCrossbowProjectile(LivingEntity shooter, LivingEntity target, Projectile projectile, float angle, float velocityIn) {
+        double x = target.getX() - shooter.getX();
+        double y = target.getEyeY() - shooter.getEyeY();
+        double z = target.getZ() - shooter.getZ();
+        // 依据距离调整箭速和不准确度
+        float distance = shooter.distanceTo(target);
+        float velocity = Mth.clamp(distance / 10f, velocityIn, 3.2f);
+        float inaccuracy = 1 - Mth.clamp(distance / 100f, 0, 0.9f);
+        // 射出的箭忽略重力，从而能让女仆百发百中
+        projectile.setNoGravity(true);
+        projectile.shoot(x, y, z, velocity, inaccuracy);
+        shooter.playSound(SoundEvents.CROSSBOW_SHOOT, 1.0F, 1.0F / (shooter.getRandom().nextFloat() * 0.4F + 0.8F));
+    }
+
     @Override
     public void onCrossbowAttackPerformed() {
         this.noActionTime = 0;

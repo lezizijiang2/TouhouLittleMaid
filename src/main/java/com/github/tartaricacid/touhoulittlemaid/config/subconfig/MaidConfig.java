@@ -13,10 +13,17 @@ public final class MaidConfig {
     public static ForgeConfigSpec.ConfigValue<String> MAID_TAMED_ITEM;
     public static ForgeConfigSpec.ConfigValue<String> MAID_TEMPTATION_ITEM;
     public static ForgeConfigSpec.ConfigValue<String> MAID_NTR_ITEM;
+
     public static ForgeConfigSpec.IntValue MAID_WORK_RANGE;
     public static ForgeConfigSpec.IntValue MAID_IDLE_RANGE;
     public static ForgeConfigSpec.IntValue MAID_SLEEP_RANGE;
     public static ForgeConfigSpec.IntValue MAID_NON_HOME_RANGE;
+
+    public static ForgeConfigSpec.IntValue BOW_RANGE;
+    public static ForgeConfigSpec.IntValue CROSS_BOW_RANGE;
+    public static ForgeConfigSpec.IntValue DANMAKU_RANGE;
+    public static ForgeConfigSpec.IntValue TRIDENT_RANGE;
+
     public static ForgeConfigSpec.IntValue FEED_ANIMAL_MAX_NUMBER;
     public static ForgeConfigSpec.BooleanValue MAID_CHANGE_MODEL;
     public static ForgeConfigSpec.BooleanValue MAID_GOMOKU_OWNER_LIMIT;
@@ -63,6 +70,18 @@ public final class MaidConfig {
 
         builder.comment("The max range of maid's Non-Home mode");
         MAID_NON_HOME_RANGE = builder.defineInRange("MaidNonHomeRange", 8, 3, 32);
+
+        builder.comment("The max range of maid's bow attack");
+        BOW_RANGE = builder.defineInRange("BowRange", 48, 8, 192);
+
+        builder.comment("The max range of maid's crossbow attack");
+        CROSS_BOW_RANGE = builder.defineInRange("CrossbowRange", 64, 8, 192);
+
+        builder.comment("The max range of maid's danmaku attack");
+        DANMAKU_RANGE = builder.defineInRange("DanmakuRange", 64, 8, 192);
+
+        builder.comment("The max range of maid's trident attack");
+        TRIDENT_RANGE = builder.defineInRange("TridentRange", 48, 8, 192);
 
         builder.comment("The max number of animals around when the maid breeds animals");
         FEED_ANIMAL_MAX_NUMBER = builder.defineInRange("FeedAnimalMaxNumber", 50, 6, 65536);

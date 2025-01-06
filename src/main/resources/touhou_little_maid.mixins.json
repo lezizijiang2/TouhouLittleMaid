@@ -7,7 +7,8 @@
   "mixins": [
     "EntityMixin",
     "MixinArrowEntity",
-    "MixinStructureTemplate"
+    "MixinStructureTemplate",
+    "MixinThrownTrident"
   ],
   "client": [
     "client.HumanoidModelMixin", "client.ItemPropertiesMixin", "client.LanguageMixin",

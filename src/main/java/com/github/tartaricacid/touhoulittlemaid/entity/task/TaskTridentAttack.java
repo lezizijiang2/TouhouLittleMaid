@@ -1,9 +1,10 @@
 package com.github.tartaricacid.touhoulittlemaid.entity.task;
 
 import com.github.tartaricacid.touhoulittlemaid.TouhouLittleMaid;
-import com.github.tartaricacid.touhoulittlemaid.api.task.IAttackTask;
 import com.github.tartaricacid.touhoulittlemaid.api.task.IRangedAttackTask;
+import com.github.tartaricacid.touhoulittlemaid.config.subconfig.MaidConfig;
 import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.task.MaidAttackTridentTask;
+import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.task.MaidRangedWalkToTarget;
 import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.task.MaidTridentTargetTask;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.init.InitSounds;
@@ -13,11 +14,10 @@ import com.mojang.datafixers.util.Pair;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.behavior.BehaviorControl;
-import net.minecraft.world.entity.ai.behavior.SetWalkTargetFromAttackTargetIfTargetOutOfReach;
 import net.minecraft.world.entity.ai.behavior.StartAttacking;
 import net.minecraft.world.entity.ai.behavior.StopAttackingIfTargetInvalid;
 import net.minecraft.world.entity.projectile.AbstractArrow;
@@ -28,6 +28,7 @@ import net.minecraft.world.item.TridentItem;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.phys.AABB;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -36,7 +37,6 @@ import java.util.function.Predicate;
 
 public class TaskTridentAttack implements IRangedAttackTask {
     public static final ResourceLocation UID = new ResourceLocation(TouhouLittleMaid.MOD_ID, "trident_attack");
-    private static final int MAX_STOP_ATTACK_DISTANCE = 30;
 
     @Override
     public ResourceLocation getUid() {
@@ -56,9 +56,9 @@ public class TaskTridentAttack implements IRangedAttackTask {
 
     @Override
     public List<Pair<Integer, BehaviorControl<? super EntityMaid>>> createBrainTasks(EntityMaid maid) {
-        BehaviorControl<EntityMaid> supplementedTask = StartAttacking.create(this::hasTrident, IAttackTask::findFirstValidAttackTarget);
+        BehaviorControl<EntityMaid> supplementedTask = StartAttacking.create(this::hasTrident, IRangedAttackTask::findFirstValidAttackTarget);
         BehaviorControl<EntityMaid> findTargetTask = StopAttackingIfTargetInvalid.create((target) -> !hasTrident(maid) || farAway(target, maid));
-        BehaviorControl<Mob> moveToTargetTask = SetWalkTargetFromAttackTargetIfTargetOutOfReach.create(0.6f);
+        BehaviorControl<EntityMaid> moveToTargetTask = MaidRangedWalkToTarget.create(0.6f);
         BehaviorControl<EntityMaid> maidAttackStrafingTask = new MaidAttackTridentTask();
         BehaviorControl<EntityMaid> shootTargetTask = new MaidTridentTargetTask();
 
@@ -73,7 +73,7 @@ public class TaskTridentAttack implements IRangedAttackTask {
 
     @Override
     public List<Pair<Integer, BehaviorControl<? super EntityMaid>>> createRideBrainTasks(EntityMaid maid) {
-        BehaviorControl<EntityMaid> supplementedTask = StartAttacking.create(this::hasTrident, IAttackTask::findFirstValidAttackTarget);
+        BehaviorControl<EntityMaid> supplementedTask = StartAttacking.create(this::hasTrident, IRangedAttackTask::findFirstValidAttackTarget);
         BehaviorControl<EntityMaid> findTargetTask = StopAttackingIfTargetInvalid.create((target) -> !hasTrident(maid) || farAway(target, maid));
         BehaviorControl<EntityMaid> shootTargetTask = new MaidTridentTargetTask();
 
@@ -82,6 +82,29 @@ public class TaskTridentAttack implements IRangedAttackTask {
                 Pair.of(5, findTargetTask),
                 Pair.of(5, shootTargetTask)
         );
+    }
+
+    @Override
+    public boolean canSee(EntityMaid maid, LivingEntity target) {
+        return IRangedAttackTask.targetConditionsTest(maid, target, MaidConfig.TRIDENT_RANGE);
+    }
+
+    @Override
+    public AABB searchDimension(EntityMaid maid) {
+        if (hasTrident(maid)) {
+            float searchRange = this.searchRadius(maid);
+            if (maid.hasRestriction()) {
+                return new AABB(maid.getRestrictCenter()).inflate(searchRange);
+            } else {
+                return maid.getBoundingBox().inflate(searchRange);
+            }
+        }
+        return IRangedAttackTask.super.searchDimension(maid);
+    }
+
+    @Override
+    public float searchRadius(EntityMaid maid) {
+        return MaidConfig.TRIDENT_RANGE.get();
     }
 
     @Override
@@ -98,10 +121,17 @@ public class TaskTridentAttack implements IRangedAttackTask {
         // TODO：伤害和好感度挂钩
         ThrownTrident thrownTrident = new ThrownTrident(shooter.level, shooter, tridentItem);
         double x = target.getX() - shooter.getX();
-        double y = target.getY(1 / 3.0) - thrownTrident.getY();
+        double y = target.getEyeY() - shooter.getEyeY();
         double z = target.getZ() - shooter.getZ();
-        double yOffset = Math.sqrt(x * x + z * z) * 0.2;
-        thrownTrident.shoot(x, y + yOffset, z, 2.5F, 1.0F);
+
+        // 依据距离调整三叉戟速度和不准确度
+        float distance = shooter.distanceTo(target);
+        float velocity = Mth.clamp(distance / 10f, 1.6f, 3.2f);
+        float inaccuracy = 1 - Mth.clamp(distance / 100f, 0, 0.9f);
+
+        // 射出的三叉戟忽略重力，从而能让女仆百发百中
+        thrownTrident.setNoGravity(true);
+        thrownTrident.shoot(x, y, z, velocity, inaccuracy);
         // 不允许任何人捡起
         thrownTrident.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;
 
@@ -116,7 +146,7 @@ public class TaskTridentAttack implements IRangedAttackTask {
     }
 
     private boolean farAway(LivingEntity target, EntityMaid maid) {
-        return maid.distanceTo(target) > MAX_STOP_ATTACK_DISTANCE;
+        return maid.distanceTo(target) > this.searchRadius(maid);
     }
 
     private boolean hasTrident(EntityMaid maid) {

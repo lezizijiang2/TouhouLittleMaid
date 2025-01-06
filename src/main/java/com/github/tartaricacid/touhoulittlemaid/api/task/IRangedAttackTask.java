@@ -4,11 +4,18 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.behavior.BehaviorUtils;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.entity.ai.targeting.TargetingConditions;
+import net.minecraftforge.common.ForgeConfigSpec;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface IRangedAttackTask extends IAttackTask {
+    /**
+     * 可见性校验工具，来自于 Sensor
+     */
+    TargetingConditions TARGET_CONDITIONS = TargetingConditions.forCombat();
+
     /**
      * 寻找第一个可见目标，使用独立的方法，区别于 IAttackTask
      *
@@ -21,6 +28,19 @@ public interface IRangedAttackTask extends IAttackTask {
             return list.stream().filter(e -> maid.canAttack(e) && maid.canSee(e)).findAny();
         }
         return Optional.empty();
+    }
+
+    /**
+     * 依据配置文件和 TargetingConditions 来检验攻击目标是否符合条件
+     *
+     * @param maid        女仆
+     * @param target      女仆将要攻击的对象
+     * @param configRange 相关距离的配置文件
+     * @return 能够攻击
+     */
+    static boolean targetConditionsTest(EntityMaid maid, LivingEntity target, ForgeConfigSpec.IntValue configRange) {
+        TARGET_CONDITIONS.range(configRange.get());
+        return TARGET_CONDITIONS.test(maid, target);
     }
 
     /**

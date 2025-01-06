@@ -13,7 +13,6 @@ import net.minecraft.world.item.TridentItem;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 
 public class MaidAttackTridentTask extends Behavior<EntityMaid> {
-    private static final int MAX_DISTANCE = 30;
     private boolean strafingClockwise;
     private boolean strafingBackwards;
     private int strafingTime = -1;
@@ -31,7 +30,6 @@ public class MaidAttackTridentTask extends Behavior<EntityMaid> {
         return this.hasTrident(owner) &&
                owner.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET)
                        .filter(Entity::isAlive)
-                       .filter(e -> owner.isWithinRestriction(e.blockPosition()))
                        .isPresent();
     }
 
@@ -39,9 +37,10 @@ public class MaidAttackTridentTask extends Behavior<EntityMaid> {
     protected void tick(ServerLevel worldIn, EntityMaid owner, long gameTime) {
         owner.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).ifPresent(target -> {
             double distance = owner.distanceTo(target);
+            float maxAttackDistance = owner.getRestrictRadius();
 
             // 如果在最大攻击距离之内，而且看见的时长足够长
-            if (distance < MAX_DISTANCE) {
+            if (distance < owner.searchRadius()) {
                 ++this.strafingTime;
             } else {
                 this.strafingTime = -1;
@@ -63,14 +62,14 @@ public class MaidAttackTridentTask extends Behavior<EntityMaid> {
             if (this.strafingTime > -1) {
                 boolean hasChanneling = EnchantmentHelper.hasChanneling(owner.getMainHandItem());
                 boolean canUseChanneling = owner.level.isThundering() && !owner.isUnderWater() && hasChanneling;
-                boolean tooClose = owner.closerThan(target, Math.max(target.getBbWidth(), target.getBbHeight()));
+                boolean tooClose = owner.closerThan(target, 6);
                 // 引雷附魔在生物处于雷雨处且不在水中时会触发，需要保证安全距离
                 boolean inDangerArea = canUseChanneling && tooClose;
 
                 // 依据距离远近决定是否前后走位
-                if (distance > MAX_DISTANCE * 0.5) {
+                if (distance > maxAttackDistance * 0.5) {
                     this.strafingBackwards = false;
-                } else if (distance < MAX_DISTANCE * 0.2 || inDangerArea) {
+                } else if (distance < maxAttackDistance * 0.2 || inDangerArea) {
                     this.strafingBackwards = true;
                 }
 

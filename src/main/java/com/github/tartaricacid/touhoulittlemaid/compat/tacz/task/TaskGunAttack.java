@@ -24,7 +24,6 @@ import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.entity.ai.behavior.RunIf;
 import net.minecraft.world.entity.ai.behavior.StartAttacking;
 import net.minecraft.world.entity.ai.behavior.StopAttackingIfTargetInvalid;
-import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
 
@@ -34,14 +33,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.Predicate;
 
+import static com.github.tartaricacid.touhoulittlemaid.api.task.IRangedAttackTask.targetConditionsTest;
+
 public class TaskGunAttack implements IRangedAttackTask {
     public static final ResourceLocation UID = new ResourceLocation(TouhouLittleMaid.MOD_ID, "gun_attack");
-    // 可见性校验工具，来自于 Sensor
-    // 依据枪械种类，可以区分为远、中、近三类
-    private static final TargetingConditions LONG_DISTANCE_TARGET_CONDITIONS = TargetingConditions.forNonCombat().range(MaidConfig.MAID_GUN_LONG_DISTANCE.get());
-    private static final TargetingConditions MEDIUM_DISTANCE_TARGET_CONDITIONS = TargetingConditions.forNonCombat().range(MaidConfig.MAID_GUN_MEDIUM_DISTANCE.get());
-    private static final TargetingConditions NEAR_DISTANCE_TARGET_CONDITIONS = TargetingConditions.forNonCombat().range(MaidConfig.MAID_GUN_NEAR_DISTANCE.get());
-
     private ItemStack icon;
 
     @Override
@@ -131,16 +126,16 @@ public class TaskGunAttack implements IRangedAttackTask {
                 // 狙击枪？用远距离模式
                 String sniper = GunTabType.SNIPER.name().toLowerCase(Locale.ENGLISH);
                 if (sniper.equals(type)) {
-                    return LONG_DISTANCE_TARGET_CONDITIONS.test(maid, target);
+                    return targetConditionsTest(maid, target, MaidConfig.MAID_GUN_LONG_DISTANCE);
                 }
                 // 霰弹枪？手枪？近距离模式
                 String shotgun = GunTabType.SHOTGUN.name().toLowerCase(Locale.ENGLISH);
                 String pistol = GunTabType.PISTOL.name().toLowerCase(Locale.ENGLISH);
                 if (shotgun.equals(type) || pistol.equals(type)) {
-                    return NEAR_DISTANCE_TARGET_CONDITIONS.test(maid, target);
+                    return targetConditionsTest(maid, target, MaidConfig.MAID_GUN_NEAR_DISTANCE);
                 }
                 // 其他情况，中等距离
-                return MEDIUM_DISTANCE_TARGET_CONDITIONS.test(maid, target);
+                return targetConditionsTest(maid, target, MaidConfig.MAID_GUN_MEDIUM_DISTANCE);
             }).orElse(IRangedAttackTask.super.canSee(maid, target));
         }
         return IRangedAttackTask.super.canSee(maid, target);
