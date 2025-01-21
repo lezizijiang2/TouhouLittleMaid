@@ -250,6 +250,10 @@ public class EntityMaid extends TamableAnimal implements CrossbowAttackMob, IMai
      * 女仆主动爬行标志位，用于管控女仆当前时刻需不需要攀爬
      */
     private boolean canClimb = false;
+    /**
+     * 一个记录女仆已经生成墓碑的变量，避免死亡重复生成墓碑
+     */
+    private boolean alreadyDropped = false;
 
     protected EntityMaid(EntityType<EntityMaid> type, Level world) {
         super(type, world);
@@ -1311,8 +1315,20 @@ public class EntityMaid extends TamableAnimal implements CrossbowAttackMob, IMai
                 maidWorldData.addTombstones(this, tombstone);
             }
 
+            // 记录墓碑已经生成，避免重复生成
+            alreadyDropped = true;
             level.addFreshEntity(tombstone);
         }
+    }
+
+    @Override
+    public void remove(RemovalReason reason) {
+        // TODO: 尝试修复可能存在的目标生成丢失问题，可能会有问题
+        if (reason == RemovalReason.KILLED && !alreadyDropped) {
+            // 女仆被指令杀后也正常生成墓碑
+            this.dropEquipment();
+        }
+        super.remove(reason);
     }
 
     @Override
