@@ -1,6 +1,7 @@
 package com.github.tartaricacid.touhoulittlemaid.entity.ai.brain;
 
 import com.github.tartaricacid.touhoulittlemaid.api.task.IMaidTask;
+import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.task.MaidFollowOwnerVehicleTask;
 import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.ride.MaidRideBegTask;
 import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.task.*;
 import com.github.tartaricacid.touhoulittlemaid.entity.item.EntitySit;
@@ -95,12 +96,13 @@ public final class MaidBrain {
         Pair<Integer, Behavior<? super EntityMaid>> interactWithDoor = Pair.of(2, new MaidInteractWithDoor());
         Pair<Integer, Behavior<? super EntityMaid>> walkToTarget = Pair.of(2, new MoveToTargetSink());
         Pair<Integer, Behavior<? super EntityMaid>> followOwner = Pair.of(3, new MaidFollowOwnerTask(0.5f, 2));
-        Pair<Integer, Behavior<? super EntityMaid>> healSelf = Pair.of(3, new MaidHealSelfTask());
+        Pair<Integer, Behavior<? super EntityMaid>> followOwnerVehicle = Pair.of(3, new MaidFollowOwnerVehicleTask(0.5f, 2));
+        Pair<Integer, BehaviorControl<? super EntityMaid>> healSelf = Pair.of(3, new MaidHealSelfTask());
         Pair<Integer, Behavior<? super EntityMaid>> pickupItem = Pair.of(10, new MaidPickupEntitiesTask(EntityMaid::isPickup, 0.6f));
         Pair<Integer, Behavior<? super EntityMaid>> clearSleep = Pair.of(99, new MaidClearSleepTask());
 
         brain.addActivity(Activity.CORE, ImmutableList.of(swimJump, climb, breathAirEaten, look, maidPanic, maidAwait, interactWithDoor,
-                walkToTarget, followOwner, healSelf, pickupItem, clearSleep));
+                walkToTarget, followOwner, followOwnerVehicle, healSelf, pickupItem, clearSleep));
     }
 
     private static void registerIdleGoals(Brain<EntityMaid> brain) {
