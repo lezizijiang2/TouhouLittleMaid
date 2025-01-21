@@ -1,6 +1,7 @@
 package com.github.tartaricacid.touhoulittlemaid.compat.tacz.task;
 
 import com.github.tartaricacid.touhoulittlemaid.TouhouLittleMaid;
+import com.github.tartaricacid.touhoulittlemaid.api.task.IAttackTask;
 import com.github.tartaricacid.touhoulittlemaid.api.task.IRangedAttackTask;
 import com.github.tartaricacid.touhoulittlemaid.compat.tacz.ai.GunAttackStrafingTask;
 import com.github.tartaricacid.touhoulittlemaid.compat.tacz.ai.GunShootTargetTask;
@@ -69,10 +70,10 @@ public class TaskGunAttack implements IRangedAttackTask {
     @Override
     public List<Pair<Integer, Behavior<? super EntityMaid>>> createBrainTasks(EntityMaid maid) {
         RunIf<EntityMaid> supplementedTask = new RunIf<>(this::mainhandHoldGun,
-                new StartAttacking<>(GunBehaviorUtils::findFirstValidAttackTarget));
+                new StartAttacking<>(IRangedAttackTask::findFirstValidAttackTarget));
         StopAttackingIfTargetInvalid<EntityMaid> findTargetTask = new StopAttackingIfTargetInvalid<>(
                 (target) -> !mainhandHoldGun(maid) || farAway(target, maid));
-        Behavior<EntityMaid> gunWalkTargetTask = new GunWalkToTarget(0.6f);
+        Behavior<EntityMaid> gunWalkTargetTask = new MaidRangedWalkToTarget(0.6f);
         Behavior<EntityMaid> gunAttackStrafingTask = new GunAttackStrafingTask();
         Behavior<EntityMaid> gunShootTargetTask = new GunShootTargetTask();
         MaidUseShieldTask maidUseShieldTask = new MaidUseShieldTask();

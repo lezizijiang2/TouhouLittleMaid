@@ -42,7 +42,8 @@ public class MaidFollowOwnerVehicleTask extends Behavior<EntityMaid> {
             return false;
         }
 
-        Entity ownerControlledVehicle = owner.getControlledVehicle();
+        Entity ownerVehicle = owner.getVehicle();
+        Entity ownerControlledVehicle = ownerVehicle != null ? ownerVehicle.getControllingPassenger() : null;
         Entity maidVehicle = maid.getVehicle();
 
         // 如果主人下船（载具）了，女仆也下船。反之上船了，女仆也跟着上船

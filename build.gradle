@@ -174,8 +174,7 @@ dependencies {
 
     implementation fg.deobf("curse.maven:iron-chests-228756:${iron_chests_id}")
 
-    implementation fg.deobf("net.conczin:immersive_melodies:${immersive_melodies_version}")
-
+    implementation fg.deobf("curse.maven:immersive-melodies-904471:5499303")
     runtimeOnly fg.deobf("curse.maven:carry-on-274259:${carry_on_id}")
 
     runtimeOnly "curse.maven:kotlin-for-forge-351264:${kotlin_id}"
@@ -185,15 +184,6 @@ dependencies {
     runtimeOnly fg.deobf("curse.maven:catalogue-459701:${catalogue_id}")
 
     implementation fg.deobf('curse.maven:timeless-and-classics-zero-1028108:5722043')
-    runtimeOnly fg.deobf("curse.maven:bookshelf-228525:${bookshelf_id}")
-    runtimeOnly fg.deobf("curse.maven:enchantment-descriptions-250419:${enchantment_descriptions_id}")
-
-    implementation fg.deobf("curse.maven:timeless-and-classics-zero-1028108:6069384-sources-6069403")
-
-    implementation fg.deobf("maven.modrinth:simple-hats:1.20.1-0.3.2-forge")
-    implementation fg.deobf("maven.modrinth:curios:5.9.1+1.20.1-forge")
-
-    implementation fg.deobf("maven.modrinth:torohealth-damage-indicators-updated:1.20.1-forge-1")
 
     implementation fg.deobf("maven.modrinth:simple-hats:1.19.2-0.3.2-forge")
     implementation fg.deobf("maven.modrinth:curios:1.19.2-5.1.6.3-forge")

@@ -123,7 +123,7 @@ public class MaidClimbTask extends Behavior<EntityMaid> {
                 maid.setDeltaMovement(0.2, 1, 0.2);
                 maid.setDeltaMovement(x1 * 0.3, y + 0.012, z1 * 0.3);
                 // TODO：将身体转向下一个节点
-                maid.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new BlockPosTracker(pointNext.asVec3()));
+                maid.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new BlockPosTracker(pointNext.asBlockPos()));
             }
         }
     }

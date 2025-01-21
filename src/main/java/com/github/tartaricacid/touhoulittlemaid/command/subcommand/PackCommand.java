@@ -23,7 +23,7 @@ public final class PackCommand {
     }
 
     private static int reloadAllPack(CommandContext<CommandSourceStack> context) {
-        context.getSource().sendSuccess(() -> Component.translatable("commands.touhou_little_maid.pack.reload.start"), true);
+        context.getSource().sendSuccess(Component.translatable("commands.touhou_little_maid.pack.reload.start"), true);
         DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> ReloadResourceEvent::asyncReloadAllPack);
         ServerCustomPackLoader.reloadPacks();
         return Command.SINGLE_SUCCESS;

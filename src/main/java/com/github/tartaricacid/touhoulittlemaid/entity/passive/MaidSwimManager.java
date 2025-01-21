@@ -59,7 +59,7 @@ public class MaidSwimManager {
      * 更新游泳姿势同时更新碰撞箱
      */
     private void updatePose() {
-        if (this.wantToSwim() && !maid.onGround()) {
+        if (this.wantToSwim() && !maid.isOnGround()) {
             maid.setSwimming(true);
             maid.setPose(Pose.SWIMMING);
         } else {

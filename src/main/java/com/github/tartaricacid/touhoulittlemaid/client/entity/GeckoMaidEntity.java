@@ -94,10 +94,10 @@ public class GeckoMaidEntity<T extends Mob> extends AnimatableEntity<T> {
         if (currentModel.head() != null) {
             IBone head = currentModel.head();
             if (update) {
-                this.headRot.set(head.getRotationX(), head.getRotationY());
+                this.headRot.set(head.getRotationX(), head.getRotationY(), head.getRotationZ());
             }
-            head.setRotationX(this.headRot.x + (float) Math.toRadians(data.headPitch));
-            head.setRotationY(this.headRot.y + (float) Math.toRadians(data.netHeadYaw));
+            head.setRotationX(this.headRot.x() + (float) Math.toRadians(data.headPitch));
+            head.setRotationY(this.headRot.y() + (float) Math.toRadians(data.netHeadYaw));
         }
     }
 

@@ -17,7 +17,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.behavior.BehaviorControl;
+import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.entity.ai.behavior.StartAttacking;
 import net.minecraft.world.entity.ai.behavior.StopAttackingIfTargetInvalid;
 import net.minecraft.world.entity.projectile.AbstractArrow;
@@ -55,12 +55,12 @@ public class TaskTridentAttack implements IRangedAttackTask {
     }
 
     @Override
-    public List<Pair<Integer, BehaviorControl<? super EntityMaid>>> createBrainTasks(EntityMaid maid) {
-        BehaviorControl<EntityMaid> supplementedTask = StartAttacking.create(this::hasTrident, IRangedAttackTask::findFirstValidAttackTarget);
-        BehaviorControl<EntityMaid> findTargetTask = StopAttackingIfTargetInvalid.create((target) -> !hasTrident(maid) || farAway(target, maid));
-        BehaviorControl<EntityMaid> moveToTargetTask = MaidRangedWalkToTarget.create(0.6f);
-        BehaviorControl<EntityMaid> maidAttackStrafingTask = new MaidAttackTridentTask();
-        BehaviorControl<EntityMaid> shootTargetTask = new MaidTridentTargetTask();
+    public List<Pair<Integer, Behavior<? super EntityMaid>>> createBrainTasks(EntityMaid maid) {
+        Behavior<EntityMaid> supplementedTask = new StartAttacking<>(this::hasTrident, IRangedAttackTask::findFirstValidAttackTarget);
+        Behavior<EntityMaid> findTargetTask = new StopAttackingIfTargetInvalid<>((target) -> !hasTrident(maid) || farAway(target, maid));
+        Behavior<EntityMaid> moveToTargetTask = new MaidRangedWalkToTarget(0.6f);
+        Behavior<EntityMaid> maidAttackStrafingTask = new MaidAttackTridentTask();
+        Behavior<EntityMaid> shootTargetTask = new MaidTridentTargetTask();
 
         return Lists.newArrayList(
                 Pair.of(5, supplementedTask),
@@ -72,10 +72,10 @@ public class TaskTridentAttack implements IRangedAttackTask {
     }
 
     @Override
-    public List<Pair<Integer, BehaviorControl<? super EntityMaid>>> createRideBrainTasks(EntityMaid maid) {
-        BehaviorControl<EntityMaid> supplementedTask = StartAttacking.create(this::hasTrident, IRangedAttackTask::findFirstValidAttackTarget);
-        BehaviorControl<EntityMaid> findTargetTask = StopAttackingIfTargetInvalid.create((target) -> !hasTrident(maid) || farAway(target, maid));
-        BehaviorControl<EntityMaid> shootTargetTask = new MaidTridentTargetTask();
+    public List<Pair<Integer, Behavior<? super EntityMaid>>> createRideBrainTasks(EntityMaid maid) {
+        Behavior<EntityMaid> supplementedTask = new StartAttacking<>(this::hasTrident, IRangedAttackTask::findFirstValidAttackTarget);
+        Behavior<EntityMaid> findTargetTask = new StopAttackingIfTargetInvalid<>((target) -> !hasTrident(maid) || farAway(target, maid));
+        Behavior<EntityMaid> shootTargetTask = new MaidTridentTargetTask();
 
         return Lists.newArrayList(
                 Pair.of(5, supplementedTask),

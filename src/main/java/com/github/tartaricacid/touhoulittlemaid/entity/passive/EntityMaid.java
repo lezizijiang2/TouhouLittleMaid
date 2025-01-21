@@ -790,7 +790,7 @@ public class EntityMaid extends TamableAnimal implements CrossbowAttackMob, IMai
             return super.hurt(source, amount);
         }
         // 使用盾牌
-        if (source.is(DamageTypeTags.IS_PROJECTILE) && this.canUseShield()) {
+        if (source.isProjectile() && this.canUseShield()) {
             boolean isUsingShield = this.isUsingItem() && this.getUsedItemHand() == InteractionHand.OFF_HAND;
             if (!isUsingShield) {
                 this.startUsingItem(InteractionHand.OFF_HAND);

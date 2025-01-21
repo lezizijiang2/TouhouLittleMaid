@@ -195,6 +195,7 @@ public interface IMaidTask {
      *
      * @param maid 女仆
      * @return 实体搜索范围水平范围值
+     *
      */
     default float searchRadius(EntityMaid maid) {
         // 默认依据女仆的工作范围划定搜索范围
