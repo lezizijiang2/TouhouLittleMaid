@@ -68,6 +68,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -254,7 +255,10 @@ public class EntityMaid extends TamableAnimal implements CrossbowAttackMob, IMai
         super(type, world);
         this.favorabilityManager = new FavorabilityManager(this);
         this.scriptBookManager = new MaidScriptBookManager();
-        this.schedulePos = new SchedulePos(BlockPos.ZERO, world.dimension().location());
+
+        // 尝试修复 https://github.com/TartaricAcid/TouhouLittleMaid/issues/631
+        ResourceKey<Level> dimension = Objects.requireNonNullElse(world.dimension(), Level.OVERWORLD);
+        this.schedulePos = new SchedulePos(BlockPos.ZERO, dimension.location());
 
         this.moveControl = new MaidMoveControl(this);
         this.swimManager = new MaidSwimManager(this);
