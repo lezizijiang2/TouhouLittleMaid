@@ -18,6 +18,7 @@ import com.github.tartaricacid.touhoulittlemaid.client.resource.pojo.MaidModelIn
 import com.github.tartaricacid.touhoulittlemaid.compat.domesticationinnovation.PetBedDrop;
 import com.github.tartaricacid.touhoulittlemaid.compat.slashblade.SlashBladeCompat;
 import com.github.tartaricacid.touhoulittlemaid.config.subconfig.MaidConfig;
+import com.github.tartaricacid.touhoulittlemaid.datagen.tag.TagItem;
 import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.MaidBrain;
 import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.MaidSchedule;
 import com.github.tartaricacid.touhoulittlemaid.entity.ai.control.MaidMoveControl;
@@ -2065,7 +2066,10 @@ public class EntityMaid extends TamableAnimal implements CrossbowAttackMob, IMai
 
     @SuppressWarnings("all")
     public Ingredient getTamedItem() {
-        return getConfigIngredient(MaidConfig.MAID_TAMED_ITEM.get(), Items.CAKE);
+        // 可以被配置文件和 tag 同时修改
+        Ingredient configIngredient = getConfigIngredient(MaidConfig.MAID_TAMED_ITEM.get(), Items.CAKE);
+        Ingredient tagIngredient = Ingredient.of(TagItem.MAID_TAMED_ITEM);
+        return Ingredient.merge(Lists.newArrayList(configIngredient, tagIngredient));
     }
 
     @SuppressWarnings("all")
