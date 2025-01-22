@@ -53,11 +53,11 @@ public final class ReloadResourceEvent extends SimplePreparableReloadListener<Vo
 
     @Override
     protected Void prepare(ResourceManager pResourceManager, ProfilerFiller pProfiler) {
-        reloadAllPack();
         return null;
     }
 
     @Override
     protected void apply(Void pObject, ResourceManager pResourceManager, ProfilerFiller pProfiler) {
+        reloadAllPack();
     }
 }
