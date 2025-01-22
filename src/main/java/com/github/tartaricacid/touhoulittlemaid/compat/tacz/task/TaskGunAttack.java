@@ -2,11 +2,12 @@ package com.github.tartaricacid.touhoulittlemaid.compat.tacz.task;
 
 import com.github.tartaricacid.touhoulittlemaid.TouhouLittleMaid;
 import com.github.tartaricacid.touhoulittlemaid.api.task.IAttackTask;
+import com.github.tartaricacid.touhoulittlemaid.api.task.IRangedAttackTask;
 import com.github.tartaricacid.touhoulittlemaid.compat.tacz.ai.GunAttackStrafingTask;
 import com.github.tartaricacid.touhoulittlemaid.compat.tacz.ai.GunShootTargetTask;
-import com.github.tartaricacid.touhoulittlemaid.compat.tacz.ai.GunWalkToTarget;
-import com.github.tartaricacid.touhoulittlemaid.compat.tacz.utils.GunBehaviorUtils;
 import com.github.tartaricacid.touhoulittlemaid.config.subconfig.MaidConfig;
+import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.task.MaidRangedWalkToTarget;
+import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.task.MaidUseShieldTask;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.init.InitItems;
 import com.github.tartaricacid.touhoulittlemaid.init.InitSounds;
@@ -64,25 +65,27 @@ public class TaskGunAttack implements IAttackTask {
     @Override
     public List<Pair<Integer, Behavior<? super EntityMaid>>> createBrainTasks(EntityMaid maid) {
         RunIf<EntityMaid> supplementedTask = new RunIf<>(this::mainhandHoldGun,
-                new StartAttacking<>(GunBehaviorUtils::findFirstValidAttackTarget));
+                new StartAttacking<>(IRangedAttackTask::findFirstValidAttackTarget));
         StopAttackingIfTargetInvalid<EntityMaid> findTargetTask = new StopAttackingIfTargetInvalid<>(
                 (target) -> !mainhandHoldGun(maid) || farAway(target, maid));
-        Behavior<EntityMaid> gunWalkTargetTask = new GunWalkToTarget(0.6f);
+        Behavior<EntityMaid> gunWalkTargetTask = new MaidRangedWalkToTarget(0.6f);
         Behavior<EntityMaid> gunAttackStrafingTask = new GunAttackStrafingTask();
         Behavior<EntityMaid> gunShootTargetTask = new GunShootTargetTask();
+        MaidUseShieldTask maidUseShieldTask = new MaidUseShieldTask();
 
         return Lists.newArrayList(
                 Pair.of(5, supplementedTask),
                 Pair.of(5, findTargetTask),
                 Pair.of(5, gunWalkTargetTask),
                 Pair.of(5, gunAttackStrafingTask),
-                Pair.of(5, gunShootTargetTask)
+                Pair.of(5, gunShootTargetTask),
+                Pair.of(5, maidUseShieldTask)
         );
     }
 
     @Override
     public List<Pair<Integer, Behavior<? super EntityMaid>>> createRideBrainTasks(EntityMaid maid) {
-        Behavior<EntityMaid> supplementedTask = new StartAttacking<>(this::mainhandHoldGun, GunBehaviorUtils::findFirstValidAttackTarget);
+        Behavior<EntityMaid> supplementedTask = new StartAttacking<>(this::mainhandHoldGun, IRangedAttackTask::findFirstValidAttackTarget);
         Behavior<EntityMaid> findTargetTask = new StopAttackingIfTargetInvalid<>(target -> !mainhandHoldGun(maid) || farAway(target, maid));
         Behavior<EntityMaid> gunShootTargetTask = new GunShootTargetTask();
 

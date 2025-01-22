@@ -6,6 +6,7 @@ import com.github.tartaricacid.touhoulittlemaid.config.subconfig.MaidConfig;
 import com.github.tartaricacid.touhoulittlemaid.config.subconfig.MiscConfig;
 import com.github.tartaricacid.touhoulittlemaid.config.subconfig.VanillaConfig;
 import com.github.tartaricacid.touhoulittlemaid.event.MaidMealRegConfigEvent;
+import com.github.tartaricacid.touhoulittlemaid.util.version.TComponent;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
@@ -80,6 +81,22 @@ public class MenuIntegration {
         maid.addEntry(entryBuilder.startIntSlider(new TranslatableComponent("config.touhou_little_maid.maid.maid_non_home_range"), MaidConfig.MAID_NON_HOME_RANGE.get(), 3, 32)
                 .setDefaultValue(8).setTooltip(new TranslatableComponent("config.touhou_little_maid.maid.maid_non_home_range.tooltip"))
                 .setSaveConsumer(i -> MaidConfig.MAID_NON_HOME_RANGE.set(i)).build());
+
+        maid.addEntry(entryBuilder.startIntSlider(TComponent.translatable("config.touhou_little_maid.maid.bow_range"), MaidConfig.BOW_RANGE.get(), 8, 192)
+                .setDefaultValue(48).setTooltip(TComponent.translatable("config.touhou_little_maid.maid.bow_range.tooltip"))
+                .setSaveConsumer(i -> MaidConfig.BOW_RANGE.set(i)).build());
+
+        maid.addEntry(entryBuilder.startIntSlider(TComponent.translatable("config.touhou_little_maid.maid.cross_bow_range"), MaidConfig.CROSS_BOW_RANGE.get(), 8, 192)
+                .setDefaultValue(64).setTooltip(TComponent.translatable("config.touhou_little_maid.maid.cross_bow_range.tooltip"))
+                .setSaveConsumer(i -> MaidConfig.CROSS_BOW_RANGE.set(i)).build());
+
+        maid.addEntry(entryBuilder.startIntSlider(TComponent.translatable("config.touhou_little_maid.maid.danmaku_range"), MaidConfig.DANMAKU_RANGE.get(), 8, 192)
+                .setDefaultValue(64).setTooltip(TComponent.translatable("config.touhou_little_maid.maid.danmaku_range.tooltip"))
+                .setSaveConsumer(i -> MaidConfig.DANMAKU_RANGE.set(i)).build());
+
+        maid.addEntry(entryBuilder.startIntSlider(TComponent.translatable("config.touhou_little_maid.maid.trident_range"), MaidConfig.TRIDENT_RANGE.get(), 8, 192)
+                .setDefaultValue(48).setTooltip(TComponent.translatable("config.touhou_little_maid.maid.trident_range.tooltip"))
+                .setSaveConsumer(i -> MaidConfig.TRIDENT_RANGE.set(i)).build());
 
         maid.addEntry(entryBuilder.startIntField(new TranslatableComponent("config.touhou_little_maid.maid.feed_animal_max_number"), MaidConfig.FEED_ANIMAL_MAX_NUMBER.get())
                 .setMin(6).setMax(65536).setDefaultValue(50).setTooltip(new TranslatableComponent("config.touhou_little_maid.maid.feed_animal_max_number.tooltip"))
@@ -188,17 +205,17 @@ public class MenuIntegration {
                 }).build());
 
         maid.addEntry(entryBuilder.startIntField(new TranslatableComponent("config.touhou_little_maid.maid.maid_gun_long_distance"), MaidConfig.MAID_GUN_LONG_DISTANCE.get())
-                .setDefaultValue(64).setMin(0).setMax(512).requireRestart()
+                .setDefaultValue(64).setMin(0).setMax(512)
                 .setTooltip(new TranslatableComponent("config.touhou_little_maid.maid.maid_gun_long_distance.tooltip"))
                 .setSaveConsumer(i -> MaidConfig.MAID_GUN_LONG_DISTANCE.set(i)).build());
 
         maid.addEntry(entryBuilder.startIntField(new TranslatableComponent("config.touhou_little_maid.maid.maid_gun_medium_distance"), MaidConfig.MAID_GUN_MEDIUM_DISTANCE.get())
-                .setDefaultValue(48).setMin(0).setMax(512).requireRestart()
+                .setDefaultValue(48).setMin(0).setMax(512)
                 .setTooltip(new TranslatableComponent("config.touhou_little_maid.maid.maid_gun_medium_distance.tooltip"))
                 .setSaveConsumer(i -> MaidConfig.MAID_GUN_MEDIUM_DISTANCE.set(i)).build());
 
         maid.addEntry(entryBuilder.startIntField(new TranslatableComponent("config.touhou_little_maid.maid.maid_gun_near_distance"), MaidConfig.MAID_GUN_NEAR_DISTANCE.get())
-                .setDefaultValue(32).setMin(0).setMax(512).requireRestart()
+                .setDefaultValue(32).setMin(0).setMax(512)
                 .setTooltip(new TranslatableComponent("config.touhou_little_maid.maid.maid_gun_near_distance.tooltip"))
                 .setSaveConsumer(i -> MaidConfig.MAID_GUN_NEAR_DISTANCE.set(i)).build());
     }

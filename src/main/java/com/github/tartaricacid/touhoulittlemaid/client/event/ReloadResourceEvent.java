@@ -5,18 +5,26 @@ import com.github.tartaricacid.touhoulittlemaid.client.animation.inner.InnerAnim
 import com.github.tartaricacid.touhoulittlemaid.client.resource.CustomPackLoader;
 import com.github.tartaricacid.touhoulittlemaid.client.resource.GeckoModelLoader;
 import com.github.tartaricacid.touhoulittlemaid.client.resource.models.PlayerMaidModels;
+import com.github.tartaricacid.touhoulittlemaid.util.version.TComponent;
+import net.minecraft.Util;
+import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
+import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
 import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.apache.commons.lang3.time.StopWatch;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 
 @Mod.EventBusSubscriber(value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
-public final class ReloadResourceEvent {
+public final class ReloadResourceEvent extends SimplePreparableReloadListener<Void> {
     public static final ResourceLocation BLOCK_ATLAS_TEXTURE = new ResourceLocation("textures/atlas/blocks.png");
     public static final ResourceLocation TANK_INPUT_SLOT = new ResourceLocation(TouhouLittleMaid.MOD_ID, "slot/tank_input_slot");
     public static final ResourceLocation TANK_OUTPUT_SLOT = new ResourceLocation(TouhouLittleMaid.MOD_ID, "slot/tank_output_slot");
@@ -24,10 +32,8 @@ public final class ReloadResourceEvent {
     public static final ResourceLocation EMPTY_BACK_SHOW_SLOT = new ResourceLocation(TouhouLittleMaid.MOD_ID, "slot/empty_back_show_slot");
 
     @SubscribeEvent
-    public static void onTextureStitchEventPost(TextureStitchEvent.Post event) {
-        if (BLOCK_ATLAS_TEXTURE.equals(event.getAtlas().location())) {
-            reloadAllPack();
-        }
+    public static void onRegister(RegisterClientReloadListenersEvent event) {
+        event.registerReloadListener(new ReloadResourceEvent());
     }
 
     @SubscribeEvent
@@ -40,7 +46,14 @@ public final class ReloadResourceEvent {
         }
     }
 
-    public static void reloadAllPack() {
+    public static void asyncReloadAllPack() {
+        CompletableFuture.supplyAsync(() -> {
+            reloadAllPack();
+            return null;
+        }, Util.backgroundExecutor());
+    }
+
+    private static void reloadAllPack() {
         StopWatch watch = StopWatch.createStarted();
         {
             GeckoModelLoader.reload();
@@ -49,6 +62,20 @@ public final class ReloadResourceEvent {
             PlayerMaidModels.reload();
         }
         watch.stop();
-        TouhouLittleMaid.LOGGER.info("Model loading time: {} ms", watch.getTime(TimeUnit.MICROSECONDS) / 1000.0);
+        double time = watch.getTime(TimeUnit.MICROSECONDS) / 1000.0;
+        if (Minecraft.getInstance().player != null) {
+            Minecraft.getInstance().player.sendMessage(TComponent.translatable("message.touhou_little_maid.reload.tip", time), Util.NIL_UUID);
+        }
+        TouhouLittleMaid.LOGGER.info("Model loading time: {} ms", time);
+    }
+
+    @Override
+    protected Void prepare(ResourceManager pResourceManager, ProfilerFiller pProfiler) {
+        reloadAllPack();
+        return null;
+    }
+
+    @Override
+    protected void apply(Void pObject, ResourceManager pResourceManager, ProfilerFiller pProfiler) {
     }
 }

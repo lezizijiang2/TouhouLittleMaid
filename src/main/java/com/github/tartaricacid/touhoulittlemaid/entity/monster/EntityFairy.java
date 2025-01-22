@@ -6,9 +6,11 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.entity.projectile.DanmakuShoot;
 import com.github.tartaricacid.touhoulittlemaid.init.InitPoi;
 import com.github.tartaricacid.touhoulittlemaid.init.InitSounds;
+import com.github.tartaricacid.touhoulittlemaid.util.version.TComponent;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -40,6 +42,7 @@ import java.util.Random;
 public class EntityFairy extends Monster implements RangedAttackMob, FlyingAnimal, IHasPowerPoint {
     public static final EntityType<EntityFairy> TYPE = EntityType.Builder.<EntityFairy>of(EntityFairy::new, MobCategory.MONSTER)
             .sized(0.6f, 1.5f).clientTrackingRange(10).build("fairy");
+    public static final String RICK = "rick";
 
     private static final String FAIRY_TYPE_TAG_NAME = "FairyType";
     private static final EntityDataAccessor<Integer> FAIRY_TYPE = SynchedEntityData.defineId(EntityFairy.class, EntityDataSerializers.INT);
@@ -144,6 +147,11 @@ public class EntityFairy extends Monster implements RangedAttackMob, FlyingAnima
     @Override
     public SpawnGroupData finalizeSpawn(ServerLevelAccessor worldIn, DifficultyInstance difficultyIn, MobSpawnType reason, @Nullable SpawnGroupData spawnDataIn, @Nullable CompoundTag dataTag) {
         this.setFairyTypeOrdinal(random.nextInt(FairyType.values().length));
+        // 有 5% 概率生成 Rick-rolling 彩蛋
+        if (random.nextInt(20) == 0) {
+            this.setCustomName(TComponent.literal(RICK));
+            this.setCustomNameVisible(true);
+        }
         return super.finalizeSpawn(worldIn, difficultyIn, reason, spawnDataIn, dataTag);
     }
 

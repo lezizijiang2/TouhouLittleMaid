@@ -55,7 +55,7 @@ public class TaskBowAttack implements IRangedAttackTask {
     @Override
     public List<Pair<Integer, Behavior<? super EntityMaid>>> createBrainTasks(EntityMaid maid) {
         RunIf<EntityMaid> supplementedTask = new RunIf<>(e -> hasBow(e) && hasArrow(e),
-                new StartAttacking<>(IAttackTask::findFirstValidAttackTarget));
+                new StartAttacking<>(IRangedAttackTask::findFirstValidAttackTarget));
         StopAttackingIfTargetInvalid<EntityMaid> findTargetTask = new StopAttackingIfTargetInvalid<>(
                 (target) -> !hasBow(maid) || !hasArrow(maid) || farAway(target, maid));
         SetWalkTargetFromAttackTargetIfTargetOutOfReach moveToTargetTask = new SetWalkTargetFromAttackTargetIfTargetOutOfReach(0.6f);
@@ -73,7 +73,7 @@ public class TaskBowAttack implements IRangedAttackTask {
 
     @Override
     public List<Pair<Integer, Behavior<? super EntityMaid>>> createRideBrainTasks(EntityMaid maid) {
-        Behavior<EntityMaid> supplementedTask = new StartAttacking<>(e -> hasBow(e) && hasArrow(e), IAttackTask::findFirstValidAttackTarget);
+        Behavior<EntityMaid> supplementedTask = new StartAttacking<>(e -> hasBow(e) && hasArrow(e), IRangedAttackTask::findFirstValidAttackTarget);
         Behavior<EntityMaid> findTargetTask = new StopAttackingIfTargetInvalid<>((target) -> !hasBow(maid) || !hasArrow(maid) || farAway(target, maid));
         Behavior<EntityMaid> shootTargetTask = new MaidShootTargetTask(2);
 

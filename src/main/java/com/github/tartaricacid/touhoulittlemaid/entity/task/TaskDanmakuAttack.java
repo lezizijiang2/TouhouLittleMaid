@@ -55,7 +55,7 @@ public class TaskDanmakuAttack implements IRangedAttackTask {
     @Override
     public List<Pair<Integer, Behavior<? super EntityMaid>>> createBrainTasks(EntityMaid maid) {
         RunIf<EntityMaid> supplementedTask = new RunIf<>(this::hasGohei,
-                new StartAttacking<>(IAttackTask::findFirstValidAttackTarget));
+                new StartAttacking<>(IRangedAttackTask::findFirstValidAttackTarget));
         StopAttackingIfTargetInvalid<EntityMaid> findTargetTask = new StopAttackingIfTargetInvalid<>(
                 (target) -> !hasGohei(maid) || farAway(target, maid));
         SetWalkTargetFromAttackTargetIfTargetOutOfReach moveToTargetTask = new SetWalkTargetFromAttackTargetIfTargetOutOfReach(0.6f);
@@ -73,7 +73,7 @@ public class TaskDanmakuAttack implements IRangedAttackTask {
 
     @Override
     public List<Pair<Integer, Behavior<? super EntityMaid>>> createRideBrainTasks(EntityMaid maid) {
-        Behavior<EntityMaid> supplementedTask = new StartAttacking<>(this::hasGohei, IAttackTask::findFirstValidAttackTarget);
+        Behavior<EntityMaid> supplementedTask = new StartAttacking<>(this::hasGohei, IRangedAttackTask::findFirstValidAttackTarget);
         Behavior<EntityMaid> findTargetTask = new StopAttackingIfTargetInvalid<>((target) -> !hasGohei(maid) || farAway(target, maid));
         Behavior<EntityMaid> shootTargetTask = new MaidShootTargetTask(2);
 
