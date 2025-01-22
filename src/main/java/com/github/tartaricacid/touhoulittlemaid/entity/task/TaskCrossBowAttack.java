@@ -47,7 +47,7 @@ public class TaskCrossBowAttack implements IRangedAttackTask {
 
     @Override
     public List<Pair<Integer, Behavior<? super EntityMaid>>> createBrainTasks(EntityMaid maid) {
-        Behavior<EntityMaid> supplementedTask = new StartAttacking<>(entityMaid -> hasCrossBow(entityMaid) && hasAmmunition(entityMaid), IAttackTask::findFirstValidAttackTarget);
+        Behavior<EntityMaid> supplementedTask = new StartAttacking<>(entityMaid -> hasCrossBow(entityMaid) && hasAmmunition(entityMaid), IRangedAttackTask::findFirstValidAttackTarget);
         Behavior<EntityMaid> findTargetTask = new StopAttackingIfTargetInvalid<>((target) -> !hasCrossBow(maid) || !hasAmmunition(maid) || farAway(target, maid));
         Behavior<Mob> moveToTargetTask = new SetWalkTargetFromAttackTargetIfTargetOutOfReach(0.6f);
         Behavior<EntityMaid> maidAttackStrafingTask = new MaidAttackStrafingTask();
@@ -64,7 +64,7 @@ public class TaskCrossBowAttack implements IRangedAttackTask {
 
     @Override
     public List<Pair<Integer, Behavior<? super EntityMaid>>> createRideBrainTasks(EntityMaid maid) {
-        Behavior<EntityMaid> supplementedTask = new StartAttacking<>(entityMaid -> hasCrossBow(entityMaid) && hasAmmunition(entityMaid), IAttackTask::findFirstValidAttackTarget);
+        Behavior<EntityMaid> supplementedTask = new StartAttacking<>(entityMaid -> hasCrossBow(entityMaid) && hasAmmunition(entityMaid), IRangedAttackTask::findFirstValidAttackTarget);
         Behavior<EntityMaid> findTargetTask = new StopAttackingIfTargetInvalid<>((target) -> !hasCrossBow(maid) || !hasAmmunition(maid) || farAway(target, maid));
         Behavior<EntityMaid> shootTargetTask = new CrossbowAttack<>();
 

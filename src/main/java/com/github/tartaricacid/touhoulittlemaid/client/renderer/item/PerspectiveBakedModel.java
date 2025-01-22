@@ -11,7 +11,6 @@ import net.minecraft.world.level.block.state.BlockState;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -26,7 +25,7 @@ public class PerspectiveBakedModel implements BakedModel {
 
     @Override
     public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, Random rand) {
-        return Collections.emptyList();
+        return this.bakedModel2d.getQuads(state, side, rand);
     }
 
     @Override

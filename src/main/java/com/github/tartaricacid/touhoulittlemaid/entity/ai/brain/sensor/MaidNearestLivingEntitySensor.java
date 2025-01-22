@@ -1,6 +1,5 @@
 package com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.sensor;
 
-import com.github.tartaricacid.touhoulittlemaid.compat.tacz.TacCompat;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.google.common.collect.ImmutableSet;
 import net.minecraft.server.level.ServerLevel;
@@ -16,24 +15,8 @@ import java.util.List;
 import java.util.Set;
 
 public class MaidNearestLivingEntitySensor extends Sensor<EntityMaid> {
-    private static final int VERTICAL_SEARCH_RANGE = 4;
-
-    @Override
     protected void doTick(ServerLevel world, EntityMaid maid) {
-        // 兼容 tac
-        if (TacCompat.isGunTask(maid)) {
-            TacCompat.doGunTick(world, maid);
-            return;
-        }
-
-        // 正常搜索
-        float radius = maid.getRestrictRadius();
-        AABB aabb;
-        if (maid.hasRestriction()) {
-            aabb = new AABB(maid.getRestrictCenter()).inflate(radius, VERTICAL_SEARCH_RANGE, radius);
-        } else {
-            aabb = maid.getBoundingBox().inflate(radius, VERTICAL_SEARCH_RANGE, radius);
-        }
+        AABB aabb = maid.searchDimension();
         List<LivingEntity> list = world.getEntitiesOfClass(LivingEntity.class, aabb, (entity) -> entity != maid && entity.isAlive());
         list.sort(Comparator.comparingDouble(maid::distanceToSqr));
         Brain<EntityMaid> brain = maid.getBrain();

@@ -6,6 +6,7 @@ import com.github.tartaricacid.touhoulittlemaid.item.bauble.BaubleManager;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
@@ -18,12 +19,16 @@ import net.minecraftforge.fml.common.Mod;
 public final class AddInformationEvent {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onRenderTooltips(ItemTooltipEvent event) {
-        if (BaubleManager.getBauble(event.getItemStack()) != null) {
+        ItemStack stack = event.getItemStack();
+        if (stack.isEmpty()) {
+            return;
+        }
+        if (BaubleManager.getBauble(stack) != null) {
             event.getToolTip().add(new TextComponent(" "));
             event.getToolTip().add(new TranslatableComponent("tooltips.touhou_little_maid.bauble.desc"));
             event.getToolTip().add(new TranslatableComponent("tooltips.touhou_little_maid.bauble.usage").withStyle(ChatFormatting.GRAY));
         }
-        if (BackpackManager.findBackpack(event.getItemStack()).isPresent()) {
+        if (BackpackManager.findBackpack(stack).isPresent()) {
             event.getToolTip().add(new TextComponent(" "));
             event.getToolTip().add(new TranslatableComponent("tooltips.touhou_little_maid.backpack.desc"));
             event.getToolTip().add(new TranslatableComponent("tooltips.touhou_little_maid.backpack.usage").withStyle(ChatFormatting.GRAY));

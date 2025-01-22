@@ -359,8 +359,9 @@ public final class MaidBaseAnimation {
 
                 ModelRendererWrapper armLeft = modelMap.get("armLeft");
                 ModelRendererWrapper armRight = modelMap.get("armRight");
+                Mob entity = maid.asEntity();
 
-                if (maid.isSwingingArms() && !TacCompat.onSwingGun(maid, armLeft, armRight)) {
+                if (!entity.getMainHandItem().isEmpty() && maid.isSwingingArms() && !TacCompat.onSwingGun(maid, armLeft, armRight)) {
                     if (armLeft != null) {
                         armLeft.setRotateAngleX(-1.396f);
                         armLeft.setRotateAngleY(0.785f);

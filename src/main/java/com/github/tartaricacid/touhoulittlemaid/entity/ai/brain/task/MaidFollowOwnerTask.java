@@ -75,8 +75,7 @@ public class MaidFollowOwnerTask extends Behavior<EntityMaid> {
 
     private boolean canTeleportTo(EntityMaid maid, BlockPos pos) {
         BlockPathTypes pathNodeType = WalkNodeEvaluator.getBlockPathTypeStatic(maid.level, pos.mutable());
-        // Fixme: 水面也可以传送
-        if (pathNodeType == BlockPathTypes.WALKABLE) {
+        if (pathNodeType == BlockPathTypes.WALKABLE || pathNodeType == BlockPathTypes.WATER) {
             BlockPos blockPos = pos.subtract(maid.blockPosition());
             return maid.level.noCollision(maid, maid.getBoundingBox().move(blockPos));
         }
