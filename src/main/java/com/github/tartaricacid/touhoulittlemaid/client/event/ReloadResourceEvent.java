@@ -14,6 +14,7 @@ import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
+import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.apache.commons.lang3.time.StopWatch;
@@ -33,6 +34,16 @@ public final class ReloadResourceEvent extends SimplePreparableReloadListener<Vo
     @SubscribeEvent
     public static void onRegister(RegisterClientReloadListenersEvent event) {
         event.registerReloadListener(new ReloadResourceEvent());
+    }
+
+    @SubscribeEvent
+    public static void onTextureStitchEventPre(TextureStitchEvent.Pre event) {
+        if (BLOCK_ATLAS_TEXTURE.equals(event.getAtlas().location())) {
+            event.addSprite(TANK_INPUT_SLOT);
+            event.addSprite(TANK_OUTPUT_SLOT);
+            event.addSprite(EMPTY_MAINHAND_SLOT);
+            event.addSprite(EMPTY_BACK_SHOW_SLOT);
+        }
     }
 
     public static void asyncReloadAllPack() {

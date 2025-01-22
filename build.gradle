@@ -176,8 +176,6 @@ dependencies {
 
     implementation fg.deobf("curse.maven:iron-chests-228756:${iron_chests_id}")
 
-//    implementation fg.deobf("net.conczin:immersive_melodies:${immersive_melodies_version}")
-
     runtimeOnly fg.deobf("curse.maven:carry-on-274259:${carry_on_id}")
 
     runtimeOnly "curse.maven:kotlin-for-forge-351264:${kotlin_id}"
@@ -190,7 +188,6 @@ dependencies {
     runtimeOnly fg.deobf("curse.maven:enchantment-descriptions-250419:${enchantment_descriptions_id}")
 
     implementation fg.deobf('curse.maven:timeless-and-classics-zero-1028108:5722012')
-//    implementation fg.deobf("curse.maven:timeless-and-classics-zero-1028108:6069384-sources-6069403")
 
     implementation fg.deobf("maven.modrinth:simple-hats:1.18.2-0.3.2-forge")
     implementation fg.deobf("maven.modrinth:curios:1.18.2-5.0.9.2-forge")
@@ -201,10 +198,6 @@ dependencies {
 
     runtimeOnly fg.deobf("maven.modrinth:embeddium:0.3.18+mc1.18.2")
     runtimeOnly fg.deobf('maven.modrinth:oculus:1.18.2-1.6.4')
-
-//    runtimeOnly fg.deobf("maven.modrinth:common-network:1.0.5-1.20.1")
-//    runtimeOnly fg.deobf("maven.modrinth:just-more-cakes:1.18.1-forge")
-//    runtimeOnly fg.deobf("maven.modrinth:spawn-animations:1.10+mod-forge")
 
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 }
