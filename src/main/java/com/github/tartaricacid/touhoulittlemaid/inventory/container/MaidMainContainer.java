@@ -1,6 +1,5 @@
 package com.github.tartaricacid.touhoulittlemaid.inventory.container;
 
-import com.github.tartaricacid.touhoulittlemaid.TouhouLittleMaid;
 import com.github.tartaricacid.touhoulittlemaid.client.event.ReloadResourceEvent;
 import com.github.tartaricacid.touhoulittlemaid.inventory.handler.BaubleItemHandler;
 import com.mojang.datafixers.util.Pair;
@@ -28,8 +27,6 @@ import static net.minecraft.world.inventory.InventoryMenu.*;
 
 public abstract class MaidMainContainer extends AbstractMaidContainer {
     public static final int PLAYER_INVENTORY_SIZE = 36;
-    private static final ResourceLocation EMPTY_MAINHAND_SLOT = new ResourceLocation("item/empty_slot_sword");
-    private static final ResourceLocation EMPTY_BACK_SHOW_SLOT = new ResourceLocation(TouhouLittleMaid.MOD_ID, "slot/empty_back_show_slot");
     private static final ResourceLocation[] TEXTURE_EMPTY_SLOTS = new ResourceLocation[]{EMPTY_ARMOR_SLOT_BOOTS, EMPTY_ARMOR_SLOT_LEGGINGS, EMPTY_ARMOR_SLOT_CHESTPLATE, EMPTY_ARMOR_SLOT_HELMET};
     private static final EquipmentSlot[] SLOT_IDS = new EquipmentSlot[]{EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET};
 
@@ -50,7 +47,7 @@ public abstract class MaidMainContainer extends AbstractMaidContainer {
             @Override
             @OnlyIn(Dist.CLIENT)
             public Pair<ResourceLocation, ResourceLocation> getNoItemIcon() {
-                return Pair.of(BLOCK_ATLAS, EMPTY_MAINHAND_SLOT);
+                return Pair.of(BLOCK_ATLAS, ReloadResourceEvent.EMPTY_MAINHAND_SLOT);
             }
         }));
         hand.ifPresent((handler) -> addSlot(new SlotItemHandler(handler, 1, 121, 77) {
@@ -107,7 +104,7 @@ public abstract class MaidMainContainer extends AbstractMaidContainer {
                 addSlot(new SlotItemHandler(inv, i, 143 + 18 * i, 37) {
                     @Override
                     public Pair<ResourceLocation, ResourceLocation> getNoItemIcon() {
-                        return Pair.of(BLOCK_ATLAS, EMPTY_BACK_SHOW_SLOT);
+                        return Pair.of(BLOCK_ATLAS, ReloadResourceEvent.EMPTY_BACK_SHOW_SLOT);
                     }
                 });
             }

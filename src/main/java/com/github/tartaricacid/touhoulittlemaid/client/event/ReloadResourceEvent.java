@@ -8,11 +8,13 @@ import com.github.tartaricacid.touhoulittlemaid.client.resource.models.PlayerMai
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
+import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.apache.commons.lang3.time.StopWatch;
@@ -23,9 +25,25 @@ import java.util.concurrent.TimeUnit;
 
 @Mod.EventBusSubscriber(value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
 public final class ReloadResourceEvent extends SimplePreparableReloadListener<Void> {
+    public static final ResourceLocation TANK_INPUT_SLOT = new ResourceLocation(TouhouLittleMaid.MOD_ID, "slot/tank_input_slot");
+    public static final ResourceLocation TANK_OUTPUT_SLOT = new ResourceLocation(TouhouLittleMaid.MOD_ID, "slot/tank_output_slot");
+    public static final ResourceLocation EMPTY_MAINHAND_SLOT = new ResourceLocation(TouhouLittleMaid.MOD_ID, "slot/empty_mainhand_slot");
+    public static final ResourceLocation BLOCK_ATLAS_TEXTURE = new ResourceLocation("textures/atlas/blocks.png");
+    public static final ResourceLocation EMPTY_BACK_SHOW_SLOT = new ResourceLocation(TouhouLittleMaid.MOD_ID, "slot/empty_back_show_slot");
+
     @SubscribeEvent
     public static void onRegister(RegisterClientReloadListenersEvent event) {
         event.registerReloadListener(new ReloadResourceEvent());
+    }
+
+    @SubscribeEvent
+    public static void onTextureStitchEventPre(TextureStitchEvent.Pre event) {
+        if (BLOCK_ATLAS_TEXTURE.equals(event.getAtlas().location())) {
+            event.addSprite(TANK_INPUT_SLOT);
+            event.addSprite(TANK_OUTPUT_SLOT);
+            event.addSprite(EMPTY_MAINHAND_SLOT);
+            event.addSprite(EMPTY_BACK_SHOW_SLOT);
+        }
     }
 
     public static void asyncReloadAllPack() {
