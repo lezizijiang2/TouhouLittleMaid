@@ -18,8 +18,6 @@ public class MaidDataGenerator {
         DataGenerator generator = event.getGenerator();
         ExistingFileHelper helper = event.getExistingFileHelper();
 
-        BlockTagsProvider blocktagsprovider = new TagBlock(generator);
-
         // Advancement
         generator.addProvider(true, new AdvancementGenerator(generator, helper));
 
@@ -27,6 +25,7 @@ public class MaidDataGenerator {
         generator.addProvider(event.includeServer(), new LootTableGenerator.AdvancementLootTables(generator));
 
         // Tags
+        BlockTagsProvider blocktagsprovider = new TagBlock(generator, TouhouLittleMaid.MOD_ID, helper);
         generator.addProvider(event.includeServer(), new EntityTypeGenerator(generator, event.getExistingFileHelper()));
         generator.addProvider(event.includeServer(), new TagItem(generator, blocktagsprovider, TouhouLittleMaid.MOD_ID, helper));
     }

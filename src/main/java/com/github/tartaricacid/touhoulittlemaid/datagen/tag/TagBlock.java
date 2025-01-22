@@ -7,10 +7,6 @@ import org.jetbrains.annotations.Nullable;
 
 
 public class TagBlock extends BlockTagsProvider {
-    public TagBlock(DataGenerator dataGenerator) {
-        super(dataGenerator);
-    }
-
     public TagBlock(DataGenerator dataGenerator, String modId, @Nullable ExistingFileHelper existingFileHelper) {
         super(dataGenerator, modId, existingFileHelper);
     }
