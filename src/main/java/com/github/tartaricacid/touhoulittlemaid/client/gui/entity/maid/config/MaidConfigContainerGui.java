@@ -54,6 +54,7 @@ public class MaidConfigContainerGui extends AbstractMaidContainerGui<MaidConfigC
                 button -> {
                     this.syncNetwork.setShowBackpack(!this.syncNetwork.showBackpack());
                     button.setValue(Component.translatable("gui.touhou_little_maid.maid_config.value." + this.syncNetwork.showBackpack()));
+                    NetworkHandler.CHANNEL.sendToServer(new MaidSubConfigMessage(this.maid.getId(), this.syncNetwork));
                 }
         ));
         buttonTop += 13;
@@ -64,6 +65,7 @@ public class MaidConfigContainerGui extends AbstractMaidContainerGui<MaidConfigC
                 button -> {
                     this.syncNetwork.setShowBackItem(!this.syncNetwork.showBackItem());
                     button.setValue(Component.translatable("gui.touhou_little_maid.maid_config.value." + this.syncNetwork.showBackItem()));
+                    NetworkHandler.CHANNEL.sendToServer(new MaidSubConfigMessage(this.maid.getId(), this.syncNetwork));
                 }
         ));
         buttonTop += 13;
@@ -74,6 +76,7 @@ public class MaidConfigContainerGui extends AbstractMaidContainerGui<MaidConfigC
                 button -> {
                     this.syncNetwork.setShowChatBubble(!this.syncNetwork.showChatBubble());
                     button.setValue(Component.translatable("gui.touhou_little_maid.maid_config.value." + this.syncNetwork.showChatBubble()));
+                    NetworkHandler.CHANNEL.sendToServer(new MaidSubConfigMessage(this.maid.getId(), this.syncNetwork));
                 }
         ));
         buttonTop += 13;
@@ -85,10 +88,12 @@ public class MaidConfigContainerGui extends AbstractMaidContainerGui<MaidConfigC
                 button -> {
                     this.syncNetwork.setSoundFreq(this.syncNetwork.soundFreq() - 0.1f);
                     button.setValue(Component.literal(Math.round(this.syncNetwork.soundFreq() * 100) + "%").withStyle(ChatFormatting.YELLOW));
+                    NetworkHandler.CHANNEL.sendToServer(new MaidSubConfigMessage(this.maid.getId(), this.syncNetwork));
                 },
                 button -> {
                     this.syncNetwork.setSoundFreq(this.syncNetwork.soundFreq() + 0.1f);
                     button.setValue(Component.literal(Math.round(this.syncNetwork.soundFreq() * 100) + "%").withStyle(ChatFormatting.YELLOW));
+                    NetworkHandler.CHANNEL.sendToServer(new MaidSubConfigMessage(this.maid.getId(), this.syncNetwork));
                 }
         ));
         buttonTop += 13;
@@ -99,10 +104,12 @@ public class MaidConfigContainerGui extends AbstractMaidContainerGui<MaidConfigC
                 button -> {
                     this.syncNetwork.setPickType(PickType.getPreviousPickType(this.syncNetwork.pickType()));
                     button.setValue(Component.translatable(PickType.getTransKey(this.syncNetwork.pickType())).withStyle(ChatFormatting.DARK_RED));
+                    NetworkHandler.CHANNEL.sendToServer(new MaidSubConfigMessage(this.maid.getId(), this.syncNetwork));
                 },
                 button -> {
                     this.syncNetwork.setPickType(PickType.getNextPickType(this.syncNetwork.pickType()));
                     button.setValue(Component.translatable(PickType.getTransKey(this.syncNetwork.pickType())).withStyle(ChatFormatting.DARK_RED));
+                    NetworkHandler.CHANNEL.sendToServer(new MaidSubConfigMessage(this.maid.getId(), this.syncNetwork));
                 }
         ));
         buttonTop += 13;
@@ -113,6 +120,7 @@ public class MaidConfigContainerGui extends AbstractMaidContainerGui<MaidConfigC
                 button -> {
                     this.syncNetwork.setOpenDoor(!this.syncNetwork.openDoor());
                     button.setValue(Component.translatable("gui.touhou_little_maid.maid_config.value." + this.syncNetwork.openDoor()));
+                    NetworkHandler.CHANNEL.sendToServer(new MaidSubConfigMessage(this.maid.getId(), this.syncNetwork));
                 }
         ));
         buttonTop += 13;
@@ -123,6 +131,18 @@ public class MaidConfigContainerGui extends AbstractMaidContainerGui<MaidConfigC
                 button -> {
                     this.syncNetwork.setOpenFenceGate(!this.syncNetwork.openFenceGate());
                     button.setValue(Component.translatable("gui.touhou_little_maid.maid_config.value." + this.syncNetwork.openFenceGate()));
+                    NetworkHandler.CHANNEL.sendToServer(new MaidSubConfigMessage(this.maid.getId(), this.syncNetwork));
+                }
+        ));
+        buttonTop += 13;
+
+        this.addRenderableWidget(new MaidConfigButton(buttonLeft, buttonTop,
+                Component.translatable("gui.touhou_little_maid.maid_config.active_climbing"),
+                Component.translatable("gui.touhou_little_maid.maid_config.value." + this.syncNetwork.activeClimbing()),
+                button -> {
+                    this.syncNetwork.setActiveClimbing(!this.syncNetwork.activeClimbing());
+                    button.setValue(Component.translatable("gui.touhou_little_maid.maid_config.value." + this.syncNetwork.activeClimbing()));
+                    NetworkHandler.CHANNEL.sendToServer(new MaidSubConfigMessage(this.maid.getId(), this.syncNetwork));
                 }
         ));
     }
@@ -130,13 +150,5 @@ public class MaidConfigContainerGui extends AbstractMaidContainerGui<MaidConfigC
     @Override
     protected void renderAddition(PoseStack poseStack, int mouseX, int mouseY, float partialTicks) {
         drawString(poseStack, font, Component.translatable("gui.touhou_little_maid.button.maid_config"), leftPos + 140, topPos + 41, 0xFFFFFF);
-    }
-
-    @Override
-    public void onClose() {
-        if (this.maid != null) {
-            NetworkHandler.CHANNEL.sendToServer(new MaidSubConfigMessage(this.maid.getId(), this.syncNetwork));
-        }
-        super.onClose();
     }
 }

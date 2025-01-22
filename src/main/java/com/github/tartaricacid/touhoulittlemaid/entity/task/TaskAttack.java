@@ -2,6 +2,7 @@ package com.github.tartaricacid.touhoulittlemaid.entity.task;
 
 import com.github.tartaricacid.touhoulittlemaid.TouhouLittleMaid;
 import com.github.tartaricacid.touhoulittlemaid.api.task.IAttackTask;
+import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.task.MaidUseShieldTask;
 import com.github.tartaricacid.touhoulittlemaid.entity.item.EntityExtinguishingAgent;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.init.InitItems;
@@ -52,12 +53,14 @@ public class TaskAttack implements IAttackTask {
                 (target) -> !hasAssaultWeapon(maid) || farAway(target, maid));
         SetWalkTargetFromAttackTargetIfTargetOutOfReach moveToTargetTask = new SetWalkTargetFromAttackTargetIfTargetOutOfReach(0.6f);
         MeleeAttack attackTargetTask = new MeleeAttack(20);
+        MaidUseShieldTask maidUseShieldTask = new MaidUseShieldTask();
 
         return Lists.newArrayList(
                 Pair.of(5, supplementedTask),
                 Pair.of(5, findTargetTask),
                 Pair.of(5, moveToTargetTask),
-                Pair.of(5, attackTargetTask)
+                Pair.of(5, attackTargetTask),
+                Pair.of(5, maidUseShieldTask)
         );
     }
 
