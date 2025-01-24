@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_17",
   "refmap": "touhou_little_maid.refmap.json",
   "mixins": [
+    "CropBlockAccessor",
     "EntityAccessor",
     "EntityMixin",
     "MixinArrowEntity",
