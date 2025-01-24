@@ -3,6 +3,7 @@ package com.github.tartaricacid.touhoulittlemaid.entity.task;
 import com.github.tartaricacid.touhoulittlemaid.TouhouLittleMaid;
 import com.github.tartaricacid.touhoulittlemaid.api.task.IFarmTask;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import com.github.tartaricacid.touhoulittlemaid.mixin.CropBlockAccessor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -42,7 +43,7 @@ public class TaskNormalFarm implements IFarmTask {
             if (block instanceof IPlantable) {
                 IPlantable plantable = (IPlantable) block;
                 return plantable.getPlantType(EmptyBlockGetter.INSTANCE, BlockPos.ZERO) == PlantType.CROP
-                        && plantable.getPlant(EmptyBlockGetter.INSTANCE, BlockPos.ZERO).getBlock() != Blocks.AIR;
+                       && plantable.getPlant(EmptyBlockGetter.INSTANCE, BlockPos.ZERO).getBlock() != Blocks.AIR;
             }
         }
         return false;
@@ -66,11 +67,17 @@ public class TaskNormalFarm implements IFarmTask {
             Block cropBlock = cropState.getBlock();
             maid.level.levelEvent(LevelEvent.PARTICLES_DESTROY_BLOCK, cropPos, Block.getId(cropState));
 
-            if (cropBlock instanceof CropBlock) {
-                CropBlock crop = (CropBlock) cropBlock;
+            if (cropBlock instanceof CropBlockAccessor crop) {
                 BlockEntity blockEntity = cropState.hasBlockEntity() ? maid.level.getBlockEntity(cropPos) : null;
                 maid.dropResourcesToMaidInv(cropState, maid.level, cropPos, blockEntity, maid, maid.getMainHandItem());
-                maid.level.setBlock(cropPos, crop.defaultBlockState(), Block.UPDATE_ALL);
+                // 直接设置 Age 为 0
+                if (cropState.hasProperty(crop.tlmAgeProperty())) {
+                    try {
+                        cropState = cropState.setValue(crop.tlmAgeProperty(), 0);
+                    } catch (IllegalArgumentException ignore) {
+                    }
+                }
+                maid.level.setBlock(cropPos, cropState, Block.UPDATE_ALL);
                 maid.level.gameEvent(maid, GameEvent.BLOCK_CHANGE, cropPos);
                 return;
             }

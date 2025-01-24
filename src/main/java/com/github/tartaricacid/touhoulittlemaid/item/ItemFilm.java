@@ -90,6 +90,7 @@ public class ItemFilm extends AbstractStoreMaidItem {
         nbt.remove("TicksFrozen");
         nbt.remove("HasVisualFire");
         nbt.remove("Passengers");
+        nbt.remove("ActiveEffects");
     }
 
     @Override
