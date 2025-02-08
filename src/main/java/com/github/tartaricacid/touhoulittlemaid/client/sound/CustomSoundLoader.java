@@ -25,6 +25,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -163,8 +164,9 @@ public class CustomSoundLoader {
                     ByteBuffer bytebuffer = audioStream.readAll();
                     sounds.add(new SoundData(bytebuffer, audioStream.getFormat()));
                     LOGGER.debug(MARKER, "sound: {}", file.getName());
-                } catch (IOException e) {
-                    e.printStackTrace();
+                } catch (Exception ioe) {
+                    Path relativizePath = CustomPackLoader.PACK_FOLDER.relativize(file.toPath());
+                    LOGGER.error(MARKER, "Error in load sound: {}", relativizePath, ioe);
                 }
             }
         }
@@ -285,8 +287,9 @@ public class CustomSoundLoader {
                 ByteBuffer bytebuffer = audioStream.readAll();
                 sounds.add(new SoundData(bytebuffer, audioStream.getFormat()));
                 LOGGER.debug(MARKER, "sound: {}", fileName);
-            } catch (IOException ioe) {
-                ioe.printStackTrace();
+            } catch (Exception ioe) {
+                Path zipFilePath = Paths.get(zipFile.getName());
+                LOGGER.error(MARKER, "Error in load sound: {} in {}", fileName, zipFilePath.getFileName(), ioe);
             }
         }
     }
