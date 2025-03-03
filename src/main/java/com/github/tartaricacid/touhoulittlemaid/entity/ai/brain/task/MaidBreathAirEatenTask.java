@@ -17,7 +17,6 @@ import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.PotionItem;
 import net.minecraft.world.item.alchemy.PotionContents;
-import net.neoforged.neoforge.items.ItemHandlerHelper;
 import net.neoforged.neoforge.items.wrapper.RangedWrapper;
 
 import java.util.List;
@@ -107,11 +106,9 @@ public class MaidBreathAirEatenTask extends Behavior<EntityMaid> {
                 continue;
             }
             if (this.isBreatheFood(maid, stack)) {
-                ItemStack foodStack = stack.copy();
+                ItemStack foodStack = backpackInv.extractItem(i, backpackInv.getStackInSlot(i).getCount(), false);
                 ItemStack handStack = itemInHand.copy();
                 maid.setItemInHand(eanHand, foodStack);
-                backpackInv.setStackInSlot(i, ItemStack.EMPTY);
-                ItemHandlerHelper.insertItemStacked(backpackInv, handStack, false);
                 maid.memoryHandItemStack(handStack);
                 itemInHand = maid.getItemInHand(eanHand);
                 hasFood = true;

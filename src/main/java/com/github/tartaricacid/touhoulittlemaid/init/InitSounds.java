@@ -41,6 +41,7 @@ public final class InitSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> MAID_MORNING = registerSound("maid.environment.morning");
     public static final DeferredHolder<SoundEvent, SoundEvent> MAID_NIGHT = registerSound("maid.environment.night");
     public static final DeferredHolder<SoundEvent, SoundEvent> MAID_CREDIT = registerSound("maid.credit");
+    public static final DeferredHolder<SoundEvent, SoundEvent> MAID_AI_CHAT = registerSound("maid.ai_chat");
     public static final DeferredHolder<SoundEvent, SoundEvent> CAMERA_USE = registerSound("item.camera_use");
     public static final DeferredHolder<SoundEvent, SoundEvent> ALTAR_CRAFT = registerSound("block.altar_craft");
     public static final DeferredHolder<SoundEvent, SoundEvent> GOMOKU = registerSound("block.gomoku");

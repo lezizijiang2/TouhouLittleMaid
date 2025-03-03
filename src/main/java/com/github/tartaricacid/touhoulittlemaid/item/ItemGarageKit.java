@@ -3,6 +3,7 @@ package com.github.tartaricacid.touhoulittlemaid.item;
 import com.github.tartaricacid.touhoulittlemaid.client.renderer.tileentity.TileEntityItemStackGarageKitRenderer;
 import com.github.tartaricacid.touhoulittlemaid.client.resource.CustomPackLoader;
 import com.github.tartaricacid.touhoulittlemaid.client.resource.pojo.MaidModelInfo;
+import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.init.InitBlocks;
 import com.github.tartaricacid.touhoulittlemaid.init.InitDataComponent;
 import com.github.tartaricacid.touhoulittlemaid.util.ParseI18n;
@@ -53,6 +54,8 @@ public class ItemGarageKit extends BlockItem {
         CompoundTag data = new CompoundTag();
         data.putString(ENTITY_ID_TAG_NAME, DEFAULT_ENTITY_ID);
         data.putString(MODEL_ID_TAG_NAME, DEFAULT_MODEL_ID);
+        // 默认数据需要强制指定 YSM 渲染为空
+        data.putBoolean(EntityMaid.IS_YSM_MODEL_TAG, false);
         return CustomData.of(data);
     }
 

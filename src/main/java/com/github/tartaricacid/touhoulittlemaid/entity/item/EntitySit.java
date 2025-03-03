@@ -2,9 +2,7 @@ package com.github.tartaricacid.touhoulittlemaid.entity.item;
 
 import com.github.tartaricacid.touhoulittlemaid.api.task.IMaidTask;
 import com.github.tartaricacid.touhoulittlemaid.entity.favorability.FavorabilityManager;
-import com.github.tartaricacid.touhoulittlemaid.entity.favorability.Type;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import com.github.tartaricacid.touhoulittlemaid.entity.task.TaskBoardGames;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
@@ -110,10 +108,6 @@ public class EntitySit extends Entity {
         if (passengerTick > 10) {
             this.discard();
         }
-    }
-
-    private boolean isGomokuTask(EntityMaid maid) {
-        return Type.GOMOKU.getTypeName().equals(this.getJoyType()) && maid.getTask().getUid().equals(TaskBoardGames.UID) && isWorkSchedule(maid);
     }
 
     private boolean isIdleSchedule(EntityMaid maid) {

@@ -1,6 +1,7 @@
 package com.github.tartaricacid.touhoulittlemaid.entity.info;
 
 import com.github.tartaricacid.touhoulittlemaid.TouhouLittleMaid;
+import com.github.tartaricacid.touhoulittlemaid.ai.manager.setting.SettingReader;
 import com.github.tartaricacid.touhoulittlemaid.client.resource.pojo.ChairModelInfo;
 import com.github.tartaricacid.touhoulittlemaid.client.resource.pojo.CustomModelPack;
 import com.github.tartaricacid.touhoulittlemaid.client.resource.pojo.MaidModelInfo;
@@ -51,10 +52,12 @@ public final class ServerCustomPackLoader {
     private static final Pattern DOMAIN = Pattern.compile("^assets/([\\w.]+)/$");
 
     public static void reloadPacks() {
+        SettingReader.clear();
         SERVER_MAID_MODELS.clearAll();
         SERVER_CHAIR_MODELS.clearAll();
         CRC32_FILE_MAP.clear();
         initPacks();
+        SettingReader.reloadSettings();
     }
 
     private static void initPacks() {
@@ -110,6 +113,8 @@ public final class ServerCustomPackLoader {
                 Path rootPath = root.toPath();
                 String domain = domainDir.getName();
                 loadMaidModelPack(rootPath, domain);
+                // 读取 AI 预设
+                SettingReader.readCustomPack(rootPath, domain);
                 loadChairModelPack(rootPath, domain);
             }
         }
@@ -123,6 +128,8 @@ public final class ServerCustomPackLoader {
                 if (matcher.find()) {
                     String domain = matcher.group(1);
                     loadMaidModelPack(zipFile, domain);
+                    // 读取 AI 预设
+                    SettingReader.readCustomPack(zipFile, domain);
                     loadChairModelPack(zipFile, domain);
                     // 文件夹形式的不记录 crc32，也不往客户端同步
                     loadCrc32Info(file);

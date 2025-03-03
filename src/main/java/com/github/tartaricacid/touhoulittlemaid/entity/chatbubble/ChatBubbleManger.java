@@ -10,7 +10,14 @@ import com.github.tartaricacid.touhoulittlemaid.util.GetJarResources;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
@@ -18,6 +25,7 @@ import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.InputStream;
@@ -173,6 +181,28 @@ public class ChatBubbleManger {
             ChatText chatText = new ChatText(ChatTextType.TEXT, ChatText.EMPTY_ICON_PATH, String.format("{%s}", key));
             INNER_CHAT_TEXT_CACHE.put(maid.getId(), chatText);
             maid.addChatBubble(getEndTime(), chatText);
+        }
+    }
+
+    /**
+     * 可以直接异步加载
+     */
+    public static void addAiChatTextSync(EntityMaid maid, String message) {
+        if (StringUtils.isNotBlank(message) && maid.level instanceof ServerLevel serverLevel) {
+            MinecraftServer server = serverLevel.getServer();
+            server.submit(() -> addAiChatText(maid, message));
+        }
+    }
+
+    public static void addAiChatText(EntityMaid maid, String message) {
+        ChatText chatText = new ChatText(ChatTextType.TEXT, ChatText.EMPTY_ICON_PATH, message);
+        maid.addChatBubble(getEndTime(), chatText);
+
+        // 给主人发送聊天栏信息
+        if (maid.getOwner() instanceof ServerPlayer player) {
+            Component name = maid.getName();
+            MutableComponent msg = Component.literal("<").append(name).append(">").append(CommonComponents.SPACE).append(message);
+            player.sendSystemMessage(msg.withStyle(ChatFormatting.GRAY));
         }
     }
 

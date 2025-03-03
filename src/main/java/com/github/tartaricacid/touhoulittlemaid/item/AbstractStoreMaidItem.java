@@ -1,8 +1,10 @@
 package com.github.tartaricacid.touhoulittlemaid.item;
 
+import com.github.tartaricacid.touhoulittlemaid.compat.ysm.YsmCompat;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.init.InitDataComponent;
 import com.github.tartaricacid.touhoulittlemaid.inventory.tooltip.ItemMaidTooltip;
+import com.github.tartaricacid.touhoulittlemaid.inventory.tooltip.YsmMaidInfo;
 import com.mojang.serialization.Codec;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
@@ -17,6 +19,7 @@ import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -58,6 +61,7 @@ public abstract class AbstractStoreMaidItem extends Item {
         return super.onEntityItemUpdate(stack, entity);
     }
 
+    @Override
     public Optional<TooltipComponent> getTooltipImage(ItemStack stack) {
         CustomData maidInfo = stack.get(InitDataComponent.MAID_INFO);
         if (maidInfo == null) {
@@ -67,8 +71,10 @@ public abstract class AbstractStoreMaidItem extends Item {
         if (modelId.isEmpty()) {
             return Optional.empty();
         }
-        Optional<String> customName = maidInfo.read(Codec.STRING.fieldOf(CUSTOM_NAME)).result();
-        return customName.map(s -> (TooltipComponent) new ItemMaidTooltip(modelId.get(), s)).or(() -> Optional.of(new ItemMaidTooltip(modelId.get(), "")));
+        String customName = maidInfo.read(Codec.STRING.fieldOf(CUSTOM_NAME)).result().orElse(StringUtils.EMPTY);
+        // YSM 渲染相关数据
+        YsmMaidInfo ysmMaidInfo = YsmCompat.getYsmMaidInfo(maidInfo.copyTag());
+        return Optional.of(new ItemMaidTooltip(modelId.get(), customName, ysmMaidInfo));
     }
 
     public InteractionResult spawnFromStore(UseOnContext context, Player player, Level worldIn, EntityMaid maid, Runnable runnable) {

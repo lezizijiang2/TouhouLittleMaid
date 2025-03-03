@@ -33,6 +33,7 @@ public class MenuIntegration {
         chairConfig(root, entryBuilder);
         miscConfig(root, entryBuilder);
         vanillaConfig(root, entryBuilder);
+        GlobalAIIntegration.aiChat(root, entryBuilder);
         NeoForge.EVENT_BUS.post(new AddClothConfigEvent(root, entryBuilder));
         return root;
     }
@@ -40,6 +41,21 @@ public class MenuIntegration {
     @SuppressWarnings("all")
     private static void maidConfig(ConfigBuilder root, ConfigEntryBuilder entryBuilder) {
         ConfigCategory maid = root.getOrCreateCategory(Component.translatable("entity.touhou_little_maid.maid"));
+
+        maid.addEntry(entryBuilder.startIntSlider(Component.translatable("config.touhou_little_maid.maid.global_maid_sound_frequency"), MaidConfig.GLOBAL_MAID_SOUND_FREQUENCY.get(), 0, 100)
+                .setDefaultValue(100).setTooltip(Component.translatable("config.touhou_little_maid.maid.global_maid_sound_frequency.tooltip"))
+                .setSaveConsumer(i -> {
+                    MaidConfig.GLOBAL_MAID_SOUND_FREQUENCY.set(i);
+                    MaidConfig.GLOBAL_MAID_SOUND_FREQUENCY.save();
+                }).build());
+
+        maid.addEntry(entryBuilder.startBooleanToggle(Component.translatable("config.touhou_little_maid.maid.global_maid_show_chat_bubble"), MaidConfig.GLOBAL_MAID_SHOW_CHAT_BUBBLE.get())
+                .setDefaultValue(true).setTooltip(Component.translatable("config.touhou_little_maid.maid.global_maid_show_chat_bubble.tooltip"))
+                .setSaveConsumer(b -> {
+                    MaidConfig.GLOBAL_MAID_SHOW_CHAT_BUBBLE.set(b);
+                    MaidConfig.GLOBAL_MAID_SHOW_CHAT_BUBBLE.save();
+                }).build());
+
         maid.addEntry(entryBuilder.startDropdownMenu(Component.translatable("config.touhou_little_maid.maid.maid_tamed_item"),
                         DropdownMenuBuilder.TopCellElementBuilder.ofItemObject(BuiltInRegistries.ITEM.get(ResourceLocation.parse(MaidConfig.MAID_TAMED_ITEM.get()))),
                         DropdownMenuBuilder.CellCreatorBuilder.ofItemObject())

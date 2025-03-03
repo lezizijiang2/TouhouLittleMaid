@@ -149,6 +149,8 @@ public class MaidModelGui extends AbstractModelGui<EntityMaid, MaidModelInfo> {
         } else {
             maid.setModelId(modelItem.getModelId().toString());
         }
+        // 女仆换皮肤界面需要指定 YSM 渲染为空
+        maid.setIsYsmModel(false);
         InventoryScreen.renderEntityInInventoryFollowsMouse(
                 graphics,
                 posX - 10,

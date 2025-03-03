@@ -160,14 +160,7 @@ public class CustomSoundLoader {
         }
         for (File file : files) {
             if (file.isFile()) {
-                try (InputStream stream = Files.newInputStream(file.toPath()); JOrbisAudioStream audioStream = new JOrbisAudioStream(stream)) {
-                    ByteBuffer bytebuffer = audioStream.readAll();
-                    sounds.add(new SoundData(bytebuffer, audioStream.getFormat()));
-                    LOGGER.debug(MARKER, "sound: {}", file.getName());
-                } catch (Exception ioe) {
-                    Path relativizePath = CustomPackLoader.PACK_FOLDER.relativize(file.toPath());
-                    LOGGER.error(MARKER, "Error in load sound: {}", relativizePath, ioe);
-                }
+                OggReader.readSoundDataFromFile(file, sounds, MARKER);
             }
         }
         return sounds;
@@ -283,14 +276,7 @@ public class CustomSoundLoader {
     private static void loadSounds(ZipFile zipFile, Map<ResourceLocation, List<SoundData>> buffers, ZipEntry zipEntry, String subDir, String fileName, SoundEvent soundEvent, String checkSubDir, String checkFileName) {
         List<SoundData> sounds = buffers.computeIfAbsent(soundEvent.getLocation(), res -> Lists.newArrayList());
         if (checkSubDir.equals(subDir) && checkFileName(checkFileName, fileName)) {
-            try (InputStream zipEntryStream = zipFile.getInputStream(zipEntry); JOrbisAudioStream audioStream = new JOrbisAudioStream(zipEntryStream)) {
-                ByteBuffer bytebuffer = audioStream.readAll();
-                sounds.add(new SoundData(bytebuffer, audioStream.getFormat()));
-                LOGGER.debug(MARKER, "sound: {}", fileName);
-            } catch (Exception ioe) {
-                Path zipFilePath = Paths.get(zipFile.getName());
-                LOGGER.error(MARKER, "Error in load sound: {} in {}", fileName, zipFilePath.getFileName(), ioe);
-            }
+            OggReader.readSoundDataFromZip(zipFile, zipEntry, fileName, sounds, MARKER);
         }
     }
 }

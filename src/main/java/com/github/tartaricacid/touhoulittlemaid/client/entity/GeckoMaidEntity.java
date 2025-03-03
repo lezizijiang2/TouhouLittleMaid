@@ -11,9 +11,12 @@ import com.github.tartaricacid.touhoulittlemaid.geckolib3.core.event.predicate.A
 import com.github.tartaricacid.touhoulittlemaid.geckolib3.core.molang.MolangParser;
 import com.github.tartaricacid.touhoulittlemaid.geckolib3.core.molang.context.AnimationContext;
 import com.github.tartaricacid.touhoulittlemaid.geckolib3.core.processor.IBone;
+import com.github.tartaricacid.touhoulittlemaid.geckolib3.geo.IGeoEntity;
 import com.github.tartaricacid.touhoulittlemaid.geckolib3.geo.animated.AnimatedGeoModel;
+import com.github.tartaricacid.touhoulittlemaid.geckolib3.geo.animated.ILocationModel;
 import com.github.tartaricacid.touhoulittlemaid.geckolib3.model.provider.data.EntityModelData;
 import com.github.tartaricacid.touhoulittlemaid.geckolib3.resource.GeckoLibCache;
+import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -24,7 +27,7 @@ import org.joml.Vector2f;
 
 import java.util.List;
 
-public class GeckoMaidEntity<T extends Mob> extends AnimatableEntity<T> {
+public class GeckoMaidEntity<T extends Mob> extends AnimatableEntity<T> implements IGeoEntity {
     @SuppressWarnings({"rawtypes", "unchecked"})
     public static final AttachmentType<GeckoMaidEntity> TYPE = AttachmentType.builder(holder -> {
         if (holder instanceof Mob mob) {
@@ -150,19 +153,35 @@ public class GeckoMaidEntity<T extends Mob> extends AnimatableEntity<T> {
         return false;
     }
 
+    @Override
     public IMaid getMaid() {
         return maid;
     }
 
+    @Override
     public MaidModelInfo getMaidInfo() {
         return maidInfo;
     }
 
+    @Override
+    public ILocationModel getGeoModel() {
+        return this.getCurrentModel();
+    }
+
+    @Override
     public void setMaidInfo(MaidModelInfo info) {
         if (this.maidInfo != info) {
             this.maidInfo = info;
             this.modelDirty = true;
         }
+    }
+
+    @Override
+    public void setYsmModel(String modelId, String texture) {
+    }
+
+    @Override
+    public void updateRoamingVars(Object2FloatOpenHashMap<String> roamingVars) {
     }
 
     private static class MaidState<T extends Mob> {
@@ -176,7 +195,10 @@ public class GeckoMaidEntity<T extends Mob> extends AnimatableEntity<T> {
         }
 
         public boolean compareState() {
-            return this.yHeadRot == this.maid.yHeadRot && this.yBodyRot == this.maid.yBodyRot;
+            if (this.yHeadRot != this.maid.yHeadRot || this.yBodyRot != this.maid.yBodyRot) {
+                return false;
+            }
+            return true;
         }
 
         public void updateState() {

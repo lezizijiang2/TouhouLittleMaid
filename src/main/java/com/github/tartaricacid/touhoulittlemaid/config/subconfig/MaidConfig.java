@@ -12,6 +12,10 @@ import static com.github.tartaricacid.touhoulittlemaid.util.ItemsUtil.getItemId;
 public final class MaidConfig {
     private static final String TRANSLATE_KEY = "config.touhou_little_maid.maid";
     public static final String TAG_PREFIX = "#";
+
+    public static ModConfigSpec.IntValue GLOBAL_MAID_SOUND_FREQUENCY;
+    public static ModConfigSpec.BooleanValue GLOBAL_MAID_SHOW_CHAT_BUBBLE;
+
     public static ModConfigSpec.ConfigValue<String> MAID_TAMED_ITEM;
     public static ModConfigSpec.ConfigValue<String> MAID_TEMPTATION_ITEM;
     public static ModConfigSpec.ConfigValue<String> MAID_NTR_ITEM;
@@ -47,6 +51,14 @@ public final class MaidConfig {
 
     public static void init(ModConfigSpec.Builder builder) {
         builder.translation(TRANSLATE_KEY).push("maid");
+
+        builder.comment("This is a global config that applies to all maids: how often maids speak")
+                .translation(translateKey("global_maid_sound_frequency"));;
+        GLOBAL_MAID_SOUND_FREQUENCY = builder.defineInRange("GlobalMaidSoundFrequency", 100, 0, 100);
+
+        builder.comment("This is a global config that applies to all maids: Whether or not to display chat bubbles")
+                .translation(translateKey("global_maid_show_chat_bubble"));;
+        GLOBAL_MAID_SHOW_CHAT_BUBBLE = builder.define("GlobalMaidShowChatBubble", true);
 
         builder.comment("The item that can tamed maid", "Use the registered name of the item directly or write tag name with # as prefix")
                 .translation(translateKey("maid_tamed_item"));
@@ -111,7 +123,7 @@ public final class MaidConfig {
 
         builder.comment("The entity that the maid will not recognize as targets for attack")
                 .translation(translateKey("maid_attack_ignore"));
-        MAID_ATTACK_IGNORE = builder.define("MaidAttackIgnore", Lists.newArrayList());
+        MAID_ATTACK_IGNORE = builder.define("MaidAttackIgnore", Lists.newArrayList("mekanism:robit"));
 
         builder.comment("The entity that the maid will not hurt when in ranged attack")
                 .translation(translateKey("maid_ranged_attack_ignore"));

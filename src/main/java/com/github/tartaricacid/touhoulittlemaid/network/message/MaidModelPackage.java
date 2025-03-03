@@ -37,9 +37,10 @@ public record MaidModelPackage(int id, ResourceLocation modelId) implements Cust
             context.enqueueWork(() -> {
                 ServerPlayer sender = (ServerPlayer) context.player();
                 Entity entity = sender.level.getEntity(message.id);
-                if (entity instanceof EntityMaid && ((EntityMaid) entity).isOwnedBy(sender)) {
+                if (entity instanceof EntityMaid maid && maid.isOwnedBy(sender)) {
                     if (sender.isCreative() || MaidConfig.MAID_CHANGE_MODEL.get()) {
-                        ((EntityMaid) entity).setModelId(message.modelId.toString());
+                        maid.setIsYsmModel(false);
+                        maid.setModelId(message.modelId.toString());
                         InitTrigger.MAID_EVENT.get().trigger(sender, TriggerType.CHANGE_MAID_MODEL);
                     } else {
                         sender.sendSystemMessage(Component.translatable("message.touhou_little_maid.change_model.disabled"));

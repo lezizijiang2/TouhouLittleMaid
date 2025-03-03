@@ -52,6 +52,16 @@ public class NetworkHandler {
         registrar.playToServer(CChessToServerPackage.TYPE, CChessToServerPackage.STREAM_CODEC, CChessToServerPackage::handle);
         registrar.playToClient(WChessToClientPackage.TYPE, WChessToClientPackage.STREAM_CODEC, WChessToClientPackage::handle);
         registrar.playToServer(WChessToServerPackage.TYPE, WChessToServerPackage.STREAM_CODEC, WChessToServerPackage::handle);
+        registrar.playToServer(SendUserChatPackage.TYPE, SendUserChatPackage.STREAM_CODEC, SendUserChatPackage::handle);
+        registrar.playToClient(TTSAudioToClientPackage.TYPE, TTSAudioToClientPackage.STREAM_CODEC, TTSAudioToClientPackage::handle);
+        registrar.playToClient(SyncAiSettingPackage.TYPE, SyncAiSettingPackage.STREAM_CODEC, SyncAiSettingPackage::handle);
+        // 仅安装 YSM 后才会发送此包
+        registrar.playToServer(YsmMaidModelPackage.TYPE, YsmMaidModelPackage.STREAM_CODEC, YsmMaidModelPackage::handle);
+        registrar.playToServer(SaveMaidAIDataPackage.TYPE, SaveMaidAIDataPackage.STREAM_CODEC, SaveMaidAIDataPackage::handle);
+        registrar.playToServer(GetMaidAIDataPackage.TYPE, GetMaidAIDataPackage.STREAM_CODEC, GetMaidAIDataPackage::handle);
+        registrar.playToClient(OpenMaidAIDataScreenPackage.TYPE, OpenMaidAIDataScreenPackage.STREAM_CODEC, OpenMaidAIDataScreenPackage::handle);
+        // 仅安装 YSM 后才会发送此包
+        registrar.playToClient(SyncYsmMaidDataPackage.TYPE, SyncYsmMaidDataPackage.STREAM_CODEC, SyncYsmMaidDataPackage::handle);
     }
 
     public static void sendToNearby(Entity entity, CustomPacketPayload toSend) {
