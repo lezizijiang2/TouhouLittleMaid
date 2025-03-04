@@ -53,6 +53,8 @@ public class ItemGarageKit extends BlockItem {
         CompoundTag data = new CompoundTag();
         data.putString(ENTITY_ID_TAG_NAME, DEFAULT_ENTITY_ID);
         data.putString(EntityMaid.MODEL_ID_TAG, DEFAULT_MODEL_ID);
+        // 默认数据需要强制指定 YSM 渲染为空
+        data.putBoolean(EntityMaid.IS_YSM_MODEL_TAG, false);
         return data;
     }
 

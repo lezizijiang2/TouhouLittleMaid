@@ -20,6 +20,7 @@ apply plugin: 'org.parchmentmc.librarian.forgegradle'
 apply plugin: 'org.spongepowered.mixin'
 apply plugin: 'java'
 apply plugin: 'idea'
+apply plugin: 'com.github.johnrengelman.shadow'
 
 version = mod_version
 group = 'com.github.tartaricacid'
@@ -139,8 +140,31 @@ repositories {
     }
 }
 
+configurations {
+    // 自定义一个 minecraftLibrary，方便引入需要 Shadow 的库
+    mcLib
+    minecraftLibrary {
+        extendsFrom mcLib
+    }
+}
+
 dependencies {
     minecraft "net.minecraftforge:forge:${forge_version}"
+
+    // MP3 音频解码库，暂时不需要
+    // mcLib "com.googlecode.soundlibs:mp3spi:1.9.5.4"
+    // mcLib "com.googlecode.soundlibs:jlayer:1.0.1.4"
+    // mcLib "com.googlecode.soundlibs:tritonus-share:0.3.7.4"
+
+    // Opus 音频解码库
+    mcLib "org.gagravarr:vorbis-java-core:0.8"
+    mcLib "io.github.jaredmdobson:concentus:1.0.2"
+
+    // YAML 库
+    mcLib "org.yaml:snakeyaml:2.4"
+
+    // 单元测试
+    testImplementation 'junit:junit:4.13.2'
 
     // compile against the JEI API but do not include it at runtime
     compileOnly(fg.deobf("mezz.jei:jei-${mc_version}-common-api:${jei_version}"))
@@ -190,6 +214,41 @@ dependencies {
     implementation fg.deobf("curse.maven:aquaculture-60028:5320128")
 
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+}
+
+shadowJar {
+    configurations = [project.configurations.mcLib]
+
+    // MP3 音频库 居然会把 junit 打包进去……
+    dependencies {
+        exclude(dependency('junit:junit'))
+    }
+
+    // 包重定向
+    // relocate 'javazoom.jl', 'com.github.tartaricacid.touhoulittlemaid.libs.jl'
+    // relocate 'javazoom.spi', 'com.github.tartaricacid.touhoulittlemaid.libs.spi'
+    // relocate 'org.tritonus', 'com.github.tartaricacid.touhoulittlemaid.libs.tritonus'
+    relocate 'io.github.jaredmdobson.concentus', 'com.github.tartaricacid.touhoulittlemaid.libs.concentus'
+    relocate 'org.gagravarr', 'com.github.tartaricacid.touhoulittlemaid.libs.gagravarr'
+    relocate 'org.yaml.snakeyaml', 'com.github.tartaricacid.touhoulittlemaid.libs.snakeyaml'
+
+    // 排除不需要的依赖项和资源
+    exclude 'META-INF/maven/**/*'
+    exclude 'META-INF/versions/**/*'
+    // 这个版权许可都已经手动添加进 licenses 里了
+    exclude 'META-INF/LICENSE'
+
+    mergeServiceFiles()
+    minimize()
+}
+
+reobf {
+    shadowJar {}
+}
+
+tasks.compileJava {
+    // dsx137: 强制重新编译和生成 refmap.json 文件，避免偶发情况下该文件丢失问题
+    outputs.upToDateWhen { false }
 }
 
 jar {

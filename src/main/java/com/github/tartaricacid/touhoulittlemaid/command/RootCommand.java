@@ -1,5 +1,6 @@
 package com.github.tartaricacid.touhoulittlemaid.command;
 
+import com.github.tartaricacid.touhoulittlemaid.command.subcommand.AIChatCommand;
 import com.github.tartaricacid.touhoulittlemaid.command.subcommand.MaidNumCommand;
 import com.github.tartaricacid.touhoulittlemaid.command.subcommand.PackCommand;
 import com.github.tartaricacid.touhoulittlemaid.command.subcommand.PowerCommand;
@@ -20,6 +21,8 @@ public final class RootCommand {
         root.then(MaidNumCommand.get());
 
         root.then(MaidDebugCommand.get());
+
+        root.then(AIChatCommand.get());
 
         dispatcher.register(root);
     }

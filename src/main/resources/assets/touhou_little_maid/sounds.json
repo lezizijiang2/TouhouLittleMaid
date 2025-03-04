@@ -216,6 +216,16 @@
       "touhou_little_maid:maid/empty"
     ]
   },
+  "maid.ai_chat": {
+    "category": "voice",
+    "subtitle": "subtitle.touhou_little_maid.ai_chat",
+    "sounds": [
+      {
+        "name": "touhou_little_maid:maid/empty",
+        "stream": true
+      }
+    ]
+  },
   "item.camera_use": {
     "category": "voice",
     "subtitle": "subtitle.touhou_little_maid.item.camera_use",

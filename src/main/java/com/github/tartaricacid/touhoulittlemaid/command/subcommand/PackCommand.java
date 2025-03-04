@@ -2,6 +2,8 @@ package com.github.tartaricacid.touhoulittlemaid.command.subcommand;
 
 import com.github.tartaricacid.touhoulittlemaid.client.event.ReloadResourceEvent;
 import com.github.tartaricacid.touhoulittlemaid.entity.info.ServerCustomPackLoader;
+import com.github.tartaricacid.touhoulittlemaid.network.NetworkHandler;
+import com.github.tartaricacid.touhoulittlemaid.network.message.SyncAiSettingMessage;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
@@ -10,6 +12,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.network.PacketDistributor;
 
 public final class PackCommand {
     private static final String PACK_NAME = "pack";
@@ -26,6 +29,7 @@ public final class PackCommand {
         context.getSource().sendSuccess(Component.translatable("commands.touhou_little_maid.pack.reload.start"), true);
         DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> ReloadResourceEvent::asyncReloadAllPack);
         ServerCustomPackLoader.reloadPacks();
+        NetworkHandler.CHANNEL.send(PacketDistributor.ALL.noArg(), new SyncAiSettingMessage());
         return Command.SINGLE_SUCCESS;
     }
 }
