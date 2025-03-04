@@ -3,10 +3,10 @@ package com.github.tartaricacid.touhoulittlemaid.client.renderer.entity.geckolay
 import com.github.tartaricacid.touhoulittlemaid.TouhouLittleMaid;
 import com.github.tartaricacid.touhoulittlemaid.api.entity.IMaid;
 import com.github.tartaricacid.touhoulittlemaid.client.model.MaidBannerModel;
-import com.github.tartaricacid.touhoulittlemaid.client.renderer.entity.GeckoEntityMaidRenderer;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.geckolib3.geo.GeoLayerRenderer;
-import com.github.tartaricacid.touhoulittlemaid.geckolib3.geo.animated.AnimatedGeoModel;
+import com.github.tartaricacid.touhoulittlemaid.geckolib3.geo.IGeoEntityRenderer;
+import com.github.tartaricacid.touhoulittlemaid.geckolib3.geo.animated.ILocationModel;
 import com.github.tartaricacid.touhoulittlemaid.geckolib3.util.RenderUtils;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -27,42 +27,47 @@ import net.minecraft.world.level.block.entity.BannerPattern;
 
 import java.util.List;
 
-public class GeckoLayerMaidBanner<T extends Mob> extends GeoLayerRenderer<T, GeckoEntityMaidRenderer<T>> {
+public class GeckoLayerMaidBanner<T extends Mob, R extends IGeoEntityRenderer<T>> extends GeoLayerRenderer<T, R> {
     private static final ResourceLocation TEXTURE = new ResourceLocation(TouhouLittleMaid.MOD_ID, "textures/entity/maid_banner.png");
     private final MaidBannerModel bannerModel;
+    private final EntityModelSet modelSet;
 
-    public GeckoLayerMaidBanner(GeckoEntityMaidRenderer<T> renderer, EntityModelSet modelSet) {
+    public GeckoLayerMaidBanner(R renderer, EntityModelSet modelSet) {
         super(renderer);
+        this.modelSet = modelSet;
         this.bannerModel = new MaidBannerModel(modelSet.bakeLayer(MaidBannerModel.LAYER));
     }
 
     @Override
-    public void render(PoseStack matrixStack, MultiBufferSource bufferIn, int packedLightIn, T entity, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch) {
-        IMaid maid = IMaid.convert(entity);
-        if (maid == null) {
+    public GeoLayerRenderer<T, R> copy(R entityRendererIn) {
+        return new GeckoLayerMaidBanner<>(entityRendererIn, modelSet);
+    }
+
+    @Override
+    public void render(PoseStack poseStack, MultiBufferSource bufferIn, int packedLight, T entity, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch) {
+        EntityMaid maid = IMaid.convertToMaid(entity);
+        if (maid == null || !(maid.getBackpackShowItem().getItem() instanceof BannerItem bannerItem)) {
             return;
         }
-        if (maid.getBackpackShowItem().getItem() instanceof BannerItem bannerItem) {
-            if (!this.entityRenderer.getAnimatableEntity(entity).getMaidInfo().isShowBackpack() || entity.isSleeping() || entity.isInvisible()) {
-                return;
-            }
-            if (entity instanceof EntityMaid entityMaid && !entityMaid.getConfigManager().isShowBackItem()) {
-                return;
-            }
-            AnimatedGeoModel geoModel = this.entityRenderer.getAnimatableEntity(entity).getCurrentModel();
-            if (geoModel != null && !geoModel.backpackBones().isEmpty()) {
-                matrixStack.pushPose();
-                RenderUtils.prepMatrixForLocator(matrixStack, geoModel.backpackBones());
-                matrixStack.translate(0, 0.75, 0.3);
-                matrixStack.scale(0.65F, -0.65F, -0.65F);
-                matrixStack.mulPose(Vector3f.YN.rotationDegrees(180));
-                matrixStack.mulPose(Vector3f.XN.rotationDegrees(5));
-                VertexConsumer buffer = bufferIn.getBuffer(RenderType.entitySolid(TEXTURE));
-                bannerModel.renderToBuffer(matrixStack, buffer, packedLightIn, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
-                List<Pair<BannerPattern, DyeColor>> list = BannerBlockEntity.createPatterns(bannerItem.getColor(), BannerBlockEntity.getItemPatterns(maid.getBackpackShowItem()));
-                BannerRenderer.renderPatterns(matrixStack, bufferIn, packedLightIn, OverlayTexture.NO_OVERLAY, bannerModel.getBanner(), ModelBakery.BANNER_BASE, true, list);
-                matrixStack.popPose();
-            }
+        if (!getGeoEntity(entity).getMaidInfo().isShowBackpack() || entity.isSleeping() || entity.isInvisible()) {
+            return;
+        }
+        if (!maid.getConfigManager().isShowBackItem()) {
+            return;
+        }
+        ILocationModel geoModel = getLocationModel(entity);
+        if (geoModel != null && !geoModel.backpackBones().isEmpty()) {
+            poseStack.pushPose();
+            RenderUtils.prepMatrixForLocator(poseStack, geoModel.backpackBones());
+            poseStack.translate(0, 0.75, 0.3);
+            poseStack.scale(0.65F, -0.65F, -0.65F);
+            poseStack.mulPose(Vector3f.YN.rotationDegrees(180));
+            poseStack.mulPose(Vector3f.XN.rotationDegrees(5));
+            VertexConsumer buffer = bufferIn.getBuffer(RenderType.entitySolid(TEXTURE));
+            this.bannerModel.renderToBuffer(poseStack, buffer, packedLight, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
+            List<Pair<BannerPattern, DyeColor>> list = BannerBlockEntity.createPatterns(bannerItem.getColor(), BannerBlockEntity.getItemPatterns(maid.getBackpackShowItem()));
+            BannerRenderer.renderPatterns(poseStack, bufferIn, packedLight, OverlayTexture.NO_OVERLAY, this.bannerModel.getBanner(), ModelBakery.BANNER_BASE, true, list);
+            poseStack.popPose();
         }
     }
 }

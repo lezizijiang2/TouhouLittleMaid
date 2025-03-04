@@ -2,6 +2,7 @@ package com.github.tartaricacid.touhoulittlemaid.init.registry;
 
 import com.github.tartaricacid.touhoulittlemaid.TouhouLittleMaid;
 import com.github.tartaricacid.touhoulittlemaid.block.multiblock.MultiBlockManager;
+import com.github.tartaricacid.touhoulittlemaid.compat.ysm.YsmCompat;
 import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.ExtraMaidBrainManager;
 import com.github.tartaricacid.touhoulittlemaid.entity.ai.fishing.FishingTypeManager;
 import com.github.tartaricacid.touhoulittlemaid.entity.backpack.BackpackManager;
@@ -25,6 +26,7 @@ public final class CommonRegistry {
         event.enqueueWork(CommandRegistry::registerArgumentTypes);
         event.enqueueWork(NetworkHandler::init);
         event.enqueueWork(CommonRegistry::modApiInit);
+        event.enqueueWork(YsmCompat::init);
     }
 
     private static void modApiInit() {

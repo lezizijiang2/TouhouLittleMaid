@@ -8,6 +8,8 @@ import com.github.tartaricacid.touhoulittlemaid.client.gui.sound.MaidSoundPackGu
 import com.github.tartaricacid.touhoulittlemaid.client.gui.widget.button.*;
 import com.github.tartaricacid.touhoulittlemaid.client.resource.CustomPackLoader;
 import com.github.tartaricacid.touhoulittlemaid.compat.ipn.SortButtonScreen;
+import com.github.tartaricacid.touhoulittlemaid.compat.ysm.YsmCompat;
+import com.github.tartaricacid.touhoulittlemaid.compat.ysm.event.OpenYsmMaidScreenEvent;
 import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.MaidGomokuAI;
 import com.github.tartaricacid.touhoulittlemaid.entity.favorability.FavorabilityManager;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
@@ -42,7 +44,9 @@ import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.StringUtil;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.ModList;
+import org.jetbrains.annotations.Nullable;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -68,6 +72,7 @@ public abstract class AbstractMaidContainerGui<T extends AbstractMaidContainer> 
     private StateSwitchingButton ride;
     private ImageButton info;
     private ImageButton skin;
+    private @Nullable ImageButton ysmSkin;
     private ImageButton sound;
     private ImageButton pageDown;
     private ImageButton pageUp;
@@ -219,6 +224,9 @@ public abstract class AbstractMaidContainerGui<T extends AbstractMaidContainer> 
         renderTransTooltip(ride, poseStack, x, y, "gui.touhou_little_maid.button.maid_riding_set");
         renderTransTooltip(modelDownload, poseStack, x, y, "gui.touhou_little_maid.button.model_download");
         renderTransTooltip(skin, poseStack, x, y, "gui.touhou_little_maid.button.skin");
+        if (ysmSkin != null) {
+            renderTransTooltip(ysmSkin, poseStack, x, y, "gui.touhou_little_maid.button.ysm_skin");
+        }
         renderTransTooltip(sound, poseStack, x, y, "gui.touhou_little_maid.button.sound");
         renderTransTooltip(pageUp, poseStack, x, y, "gui.touhou_little_maid.task.previous_page");
         renderTransTooltip(pageDown, poseStack, x, y, "gui.touhou_little_maid.task.next_page");
@@ -242,11 +250,26 @@ public abstract class AbstractMaidContainerGui<T extends AbstractMaidContainer> 
 
     private void addStateButton() {
         skin = new ImageButton(leftPos + 62, topPos + 14, 9, 9, 72, 43, 10, BUTTON, (b) -> CacheIconManager.openMaidModelGui(maid));
-        sound = new ImageButton(leftPos + 52, topPos + 14, 9, 9, 144, 43, 10, BUTTON, (b) -> getMinecraft().setScreen(new MaidSoundPackGui(maid)));
         info = new ImageButton(leftPos + 8, topPos + 14, 9, 9, 72, 65, 10, BUTTON, NO_ACTION);
         this.addRenderableWidget(skin);
-        this.addRenderableWidget(sound);
         this.addRenderableWidget(info);
+
+        if (YsmCompat.isInstalled()) {
+            this.ysmSkin = new ImageButton(leftPos + 52, topPos + 14, 9, 9,
+                    144, 65, 10, BUTTON,
+                    (b) -> MinecraftForge.EVENT_BUS.post(new OpenYsmMaidScreenEvent(maid)));
+            this.sound = new ImageButton(leftPos + 42, topPos + 14, 9, 9,
+                    144, 43, 10, BUTTON,
+                    (b) -> getMinecraft().setScreen(new MaidSoundPackGui(maid)));
+
+            this.addRenderableWidget(ysmSkin);
+            this.addRenderableWidget(sound);
+        } else {
+            this.sound = new ImageButton(leftPos + 52, topPos + 14, 9, 9,
+                    144, 43, 10, BUTTON,
+                    (b) -> getMinecraft().setScreen(new MaidSoundPackGui(maid)));
+            this.addRenderableWidget(sound);
+        }
     }
 
     private void addTaskControlButton() {

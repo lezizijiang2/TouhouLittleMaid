@@ -25,7 +25,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -60,6 +63,8 @@ public class BlockGarageKit extends Block implements EntityBlock {
             CompoundTag data = stack.getOrCreateTagElement(ENTITY_INFO);
             data.putString("id", Objects.requireNonNull(InitEntities.MAID.get().getRegistryName()).toString());
             data.putString(EntityMaid.MODEL_ID_TAG, modelId);
+            // 创造模式物品栏数据需要强制指定 YSM 渲染为空
+            data.putBoolean(EntityMaid.IS_YSM_MODEL_TAG, false);
             items.add(stack);
         }
     }

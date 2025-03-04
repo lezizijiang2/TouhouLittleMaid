@@ -37,15 +37,24 @@ public class MenuIntegration {
         chairConfig(root, entryBuilder);
         miscConfig(root, entryBuilder);
         vanillaConfig(root, entryBuilder);
+        GlobalAIIntegration.aiChat(root, entryBuilder);
         MinecraftForge.EVENT_BUS.post(new AddClothConfigEvent(root, entryBuilder));
         return root;
     }
 
     @SuppressWarnings("all")
     private static void maidConfig(ConfigBuilder root, ConfigEntryBuilder entryBuilder) {
-        ConfigCategory maid = root.getOrCreateCategory(new TranslatableComponent("config.touhou_little_maid.maid"));
+        ConfigCategory maid = root.getOrCreateCategory(TComponent.translatable("config.touhou_little_maid.maid"));
 
-        maid.addEntry(entryBuilder.startDropdownMenu(new TranslatableComponent("config.touhou_little_maid.maid.maid_tamed_item"),
+        maid.addEntry(entryBuilder.startIntSlider(TComponent.translatable("config.touhou_little_maid.maid.global_maid_sound_frequency"), MaidConfig.GLOBAL_MAID_SOUND_FREQUENCY.get(), 0, 100)
+                .setDefaultValue(100).setTooltip(TComponent.translatable("config.touhou_little_maid.maid.global_maid_sound_frequency.tooltip"))
+                .setSaveConsumer(i -> MaidConfig.GLOBAL_MAID_SOUND_FREQUENCY.set(i)).build());
+
+        maid.addEntry(entryBuilder.startBooleanToggle(TComponent.translatable("config.touhou_little_maid.maid.global_maid_show_chat_bubble"), MaidConfig.GLOBAL_MAID_SHOW_CHAT_BUBBLE.get())
+                .setDefaultValue(true).setTooltip(TComponent.translatable("config.touhou_little_maid.maid.global_maid_show_chat_bubble.tooltip"))
+                .setSaveConsumer(MaidConfig.GLOBAL_MAID_SHOW_CHAT_BUBBLE::set).build());
+
+        maid.addEntry(entryBuilder.startDropdownMenu(TComponent.translatable("config.touhou_little_maid.maid.maid_tamed_item"),
                         DropdownMenuBuilder.TopCellElementBuilder.ofItemObject(ForgeRegistries.ITEMS.getValue(new ResourceLocation(MaidConfig.MAID_TAMED_ITEM.get()))),
                         DropdownMenuBuilder.CellCreatorBuilder.ofItemObject())
                 .setSelections(Registry.ITEM.stream().sorted(Comparator.comparing(Item::toString)).collect(Collectors.toCollection(LinkedHashSet::new)))

@@ -107,7 +107,6 @@ public class MaidHomeMealTask extends MaidCheckRateTask {
         candidateFood.intStream().skip(skipCount).findFirst().ifPresent(slotIndex -> {
             ItemStack outputStack = handler.extractItem(slotIndex, 1, false);
             this.tmpPicnicMat.refresh();
-            ItemHandlerHelper.insertItemStacked(availableInv, handItemCopy, false);
             maid.setItemInHand(hand, outputStack);
             ItemStack refreshItemInHand = maid.getItemInHand(hand);
             for (IMaidMeal maidMeal : maidMeals) {

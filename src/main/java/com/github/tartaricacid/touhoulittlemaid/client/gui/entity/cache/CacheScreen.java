@@ -26,12 +26,12 @@ import java.util.concurrent.TimeUnit;
 
 @OnlyIn(Dist.CLIENT)
 public class CacheScreen<T extends LivingEntity, E extends IModelInfo> extends Screen {
-    private final Screen parent;
-    private final EntityType<T> entityType;
-    private final Queue<E> modelInfos;
-    private final EntityRender<T, E> entityRender;
-    private final int totalCount;
-    private final StopWatch stopWatch;
+    protected final Screen parent;
+    protected final EntityType<T> entityType;
+    protected final Queue<E> modelInfos;
+    protected final EntityRender<T, E> entityRender;
+    protected final int totalCount;
+    protected final StopWatch stopWatch;
 
     public CacheScreen(Screen parent, EntityType<T> entityType, Queue<E> modelInfos, EntityRender<T, E> entityRender) {
         super(new TextComponent("Cache Screen"));
@@ -90,7 +90,7 @@ public class CacheScreen<T extends LivingEntity, E extends IModelInfo> extends S
         drawCenteredString(poseStack, font, new TranslatableComponent("gui.touhou_little_maid.cache_screen.desc"), this.width / 2, this.height - 30, 0xFFFFFF);
     }
 
-    private void doCacheIcon(PoseStack poseStack, int posZ) {
+    protected void doCacheIcon(PoseStack poseStack, int posZ) {
         E modelInfo = modelInfos.poll();
         if (modelInfo != null) {
             double guiScale = Minecraft.getInstance().getWindow().getGuiScale();

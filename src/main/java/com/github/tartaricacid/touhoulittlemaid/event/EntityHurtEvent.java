@@ -14,6 +14,7 @@ import net.minecraftforge.fml.common.Mod;
 @Mod.EventBusSubscriber
 public final class EntityHurtEvent {
     @SubscribeEvent
+    @SuppressWarnings("removal")
     public static void onArrowImpact(ProjectileImpactEvent event) {
         Entity attacker = event.getProjectile().getOwner();
         HitResult ray = event.getRayTraceResult();

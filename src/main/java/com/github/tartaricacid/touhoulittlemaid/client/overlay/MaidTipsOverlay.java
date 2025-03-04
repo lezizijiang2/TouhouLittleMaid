@@ -2,6 +2,8 @@ package com.github.tartaricacid.touhoulittlemaid.client.overlay;
 
 import com.github.tartaricacid.touhoulittlemaid.TouhouLittleMaid;
 import com.github.tartaricacid.touhoulittlemaid.api.ILittleMaid;
+import com.github.tartaricacid.touhoulittlemaid.client.event.PressAIChatKeyEvent;
+import com.github.tartaricacid.touhoulittlemaid.compat.ysm.YsmCompat;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.util.version.TComponent;
 import com.google.common.collect.ImmutableMap;
@@ -56,6 +58,8 @@ public class MaidTipsOverlay {
 
         overlay.addSpecialTips("overlay.touhou_little_maid.ntr_item.tips", (item, maid, player) -> !maid.isOwnedBy(player) && EntityMaid.getNtrItem().test(item));
         overlay.addSpecialTips("overlay.touhou_little_maid.remove_backpack.tips", (item, maid, player) -> maid.isOwnedBy(player) && maid.hasBackpack() && item.is(Tags.Items.SHEARS));
+        overlay.addSpecialTips("overlay.touhou_little_maid.ysm_roulette_anim.tips", MaidTipsOverlay::checkYsmRouletteAnimCondition);
+        overlay.addSpecialTips("overlay.touhou_little_maid.can_ai_chat.tips", MaidTipsOverlay::checkAiChatCondition);
 
         for (ILittleMaid littleMaid : TouhouLittleMaid.EXTENSIONS) {
             littleMaid.addMaidTips(overlay);
@@ -63,6 +67,31 @@ public class MaidTipsOverlay {
 
         TIPS = ImmutableMap.copyOf(TIPS);
         SPECIAL_TIPS = ImmutableMap.copyOf(SPECIAL_TIPS);
+    }
+
+    private static boolean checkYsmRouletteAnimCondition(ItemStack item, EntityMaid maid, LocalPlayer player) {
+        if (!YsmCompat.isInstalled()) {
+            return false;
+        }
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.screen != null) {
+            return false;
+        }
+        if (!item.isEmpty()) {
+            return false;
+        }
+        return maid.isOwnedBy(player) && maid.isYsmModel();
+    }
+
+    private static boolean checkAiChatCondition(ItemStack item, EntityMaid maid, LocalPlayer player) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.screen != null) {
+            return false;
+        }
+        if (!item.isEmpty()) {
+            return false;
+        }
+        return maid.isOwnedBy(player) && PressAIChatKeyEvent.CAN_CHAT_MAID_IDS.contains(maid.getModelId());
     }
 
     private static MutableComponent checkSpecialTips(ItemStack mainhandItem, EntityMaid maid, LocalPlayer player) {
@@ -116,17 +145,17 @@ public class MaidTipsOverlay {
             int screenWidth = minecraft.getWindow().getGuiScaledWidth();
             int screenHeight = minecraft.getWindow().getGuiScaledHeight();
             PoseStack poseStack = event.getMatrixStack();
-            List<FormattedCharSequence> split = minecraft.font.split(tip, 150);
+            List<FormattedCharSequence> split = minecraft.font.split(tip, 120);
             int offset = (screenHeight / 2 - 5) - split.size() * 10;
-            Minecraft.getInstance().getItemRenderer().renderGuiItem(player.getMainHandItem(), screenWidth / 2 - 8, offset);
+            Minecraft.getInstance().getItemRenderer().renderGuiItem(player.getMainHandItem(), screenWidth / 2 + 32, offset);
             RenderSystem.setShader(GameRenderer::getPositionTexShader);
             RenderSystem.setShaderTexture(0, ICON);
             RenderSystem.enableDepthTest();
-            blit(poseStack, screenWidth / 2 + 2, offset - 4, 16, 16, 16, 16, 16, 16);
+            blit(poseStack, screenWidth / 2 + 42, offset - 4, 16, 16, 16, 16, 16, 16);
             offset += 18;
             for (FormattedCharSequence sequence : split) {
                 int width = minecraft.font.width(sequence);
-                minecraft.font.drawShadow(poseStack, sequence, (screenWidth - width) / 2.0f, offset, 0xFFFFFF);
+                minecraft.font.drawShadow(poseStack, sequence, screenWidth / 2f + 32, offset, 0xFFFFFF);
                 offset += 10;
             }
         }
@@ -139,7 +168,7 @@ public class MaidTipsOverlay {
     }
 
     public void addSpecialTips(String key, CheckCondition condition) {
-        SPECIAL_TIPS.put(condition, (MutableComponent) TComponent.translatable(key));
+        SPECIAL_TIPS.put(condition, TComponent.translatable(key));
     }
 
     public interface CheckCondition {
