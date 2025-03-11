@@ -52,7 +52,7 @@ public class ClientMaidTooltip implements ClientTooltipComponent {
                 return Component.empty();
             }
             MutableComponent name = Component.Serializer.fromJson(ysmMaidInfo.name(), level.registryAccess());
-            if (name != null && name.equals(Component.empty())) {
+            if (name == null || name.equals(Component.empty())) {
                 return Component.literal(ysmMaidInfo.modelId());
             }
             return name;

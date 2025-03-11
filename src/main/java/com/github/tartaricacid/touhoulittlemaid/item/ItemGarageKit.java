@@ -3,9 +3,11 @@ package com.github.tartaricacid.touhoulittlemaid.item;
 import com.github.tartaricacid.touhoulittlemaid.client.renderer.tileentity.TileEntityItemStackGarageKitRenderer;
 import com.github.tartaricacid.touhoulittlemaid.client.resource.CustomPackLoader;
 import com.github.tartaricacid.touhoulittlemaid.client.resource.pojo.MaidModelInfo;
+import com.github.tartaricacid.touhoulittlemaid.compat.ysm.YsmCompat;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.init.InitBlocks;
 import com.github.tartaricacid.touhoulittlemaid.init.InitDataComponent;
+import com.github.tartaricacid.touhoulittlemaid.inventory.tooltip.YsmMaidInfo;
 import com.github.tartaricacid.touhoulittlemaid.util.ParseI18n;
 import com.mojang.serialization.Codec;
 import net.minecraft.client.Minecraft;
@@ -63,7 +65,7 @@ public class ItemGarageKit extends BlockItem {
     @OnlyIn(Dist.CLIENT)
     public Component getName(ItemStack stack) {
         // 仅在客户端添加这个名称
-        if (FMLEnvironment.dist == Dist.CLIENT) {
+        if (FMLEnvironment.dist == Dist.CLIENT && Minecraft.getInstance().level != null) {
             // 手办名字前缀
             MutableComponent prefix = Component.translatable("block.touhou_little_maid.garage_kit.prefix");
             CustomData data = getMaidData(stack);
@@ -75,7 +77,19 @@ public class ItemGarageKit extends BlockItem {
                 return prefix.append(entityType.getDescription());
             }
 
-            // 如果是女仆的，直接显示人物名称
+            // 优先使用 YSM 模型名称
+            if (YsmCompat.isInstalled()) {
+                YsmMaidInfo ysmMaidInfo = YsmCompat.getYsmMaidInfo(data.copyTag());
+                if (ysmMaidInfo.isYsmModel()) {
+                    MutableComponent name = Component.Serializer.fromJson(ysmMaidInfo.name(), Minecraft.getInstance().level.registryAccess());
+                    if (name == null || name.equals(Component.empty())) {
+                        return prefix.append(ysmMaidInfo.modelId());
+                    }
+                    return prefix.append(name);
+                }
+            }
+
+            // 然后才是默认模型名
             String modelId = data.read(Codec.STRING.fieldOf(MODEL_ID_TAG_NAME)).result().orElse(DEFAULT_MODEL_ID);
             MaidModelInfo info = CustomPackLoader.MAID_MODELS.getInfo(modelId).orElse(null);
             if (info != null) {

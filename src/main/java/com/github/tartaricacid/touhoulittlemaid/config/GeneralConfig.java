@@ -10,6 +10,7 @@ public final class GeneralConfig {
         ChairConfig.init(builder);
         MiscConfig.init(builder);
         VanillaConfig.init(builder);
+        RenderConfig.init(builder);
         AIConfig.init(builder);
         return builder.build();
     }

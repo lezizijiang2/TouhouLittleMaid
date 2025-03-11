@@ -2,6 +2,7 @@ package com.github.tartaricacid.touhoulittlemaid.util;
 
 import com.github.tartaricacid.touhoulittlemaid.crafting.AltarRecipe;
 import com.github.tartaricacid.touhoulittlemaid.init.InitItems;
+import com.github.tartaricacid.touhoulittlemaid.init.InitRecipes;
 import com.github.tartaricacid.touhoulittlemaid.item.ItemEntityPlaceholder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.NonNullList;
@@ -27,6 +28,7 @@ public final class JERIUtil {
     }
 
     private static void recipeMaker(AltarRecipeMaker maker, AltarRecipe altarRecipe) {
+        Minecraft.getInstance().level.getRecipeManager().getAllRecipesFor(InitRecipes.ALTAR_CRAFTING.get());
         ResourceLocation recipeId = altarRecipe.getId();
         ItemStack output = altarRecipe.getResultItem(Minecraft.getInstance().level.registryAccess());
         if (!altarRecipe.isItemCraft()) {
