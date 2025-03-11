@@ -1,7 +1,6 @@
 package com.github.tartaricacid.touhoulittlemaid.entity.ai.brain;
 
 import com.github.tartaricacid.touhoulittlemaid.api.task.IMaidTask;
-import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.task.MaidFollowOwnerVehicleTask;
 import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.ride.MaidRideBegTask;
 import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.task.*;
 import com.github.tartaricacid.touhoulittlemaid.entity.item.EntitySit;
@@ -20,6 +19,7 @@ import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.schedule.Activity;
 
 import java.util.List;
+import java.util.function.Predicate;
 
 public final class MaidBrain {
     public static ImmutableList<MemoryModuleType<?>> getMemoryTypes() {
@@ -108,7 +108,7 @@ public final class MaidBrain {
         Pair<Integer, Behavior<? super EntityMaid>> beg = Pair.of(5, new MaidBegTask());
         Pair<Integer, Behavior<? super EntityMaid>> homeMeal = Pair.of(6, new MaidFindHomeMealTask(0.6f, 2));
         Pair<Integer, Behavior<? super EntityMaid>> joy = Pair.of(7, new MaidJoyTask(0.6f, 2));
-        Pair<Integer, Behavior<? super EntityMaid>> supplemented = Pair.of(20, getLookAndRandomWalk());
+        Pair<Integer, Behavior<? super EntityMaid>> supplemented = Pair.of(20, getLookAndRandomWalk(maid -> true));
         Pair<Integer, Behavior<? super EntityMaid>> updateActivity = Pair.of(99, new MaidUpdateActivityFromSchedule());
 
         brain.addActivity(Activity.IDLE, ImmutableList.of(beg, homeMeal, joy, supplemented, updateActivity));
@@ -125,15 +125,13 @@ public final class MaidBrain {
         }
         pairMaidList.add(Pair.of(6, new MaidBegTask()));
         pairMaidList.add(Pair.of(7, new MaidWorkMealTask()));
-        if (task.enableLookAndRandomWalk(maid)) {
-            pairMaidList.add(Pair.of(20, getLookAndRandomWalk()));
-        }
+        pairMaidList.add(Pair.of(20, getLookAndRandomWalk(e -> e.getTask().enableLookAndRandomWalk(e))));
         brain.addActivity(Activity.WORK, ImmutableList.copyOf(pairMaidList));
     }
 
     private static void registerRestGoals(Brain<EntityMaid> brain) {
         Pair<Integer, Behavior<? super EntityMaid>> bed = Pair.of(5, new MaidBedTask(0.6f, 2));
-        Pair<Integer, Behavior<? super EntityMaid>> supplemented = Pair.of(20, getLookAndRandomWalk());
+        Pair<Integer, Behavior<? super EntityMaid>> supplemented = Pair.of(20, getLookAndRandomWalk(maid -> true));
         Pair<Integer, Behavior<? super EntityMaid>> updateActivity = Pair.of(99, new MaidUpdateActivityFromSchedule());
 
         brain.addActivity(Activity.REST, ImmutableList.of(bed, supplemented, updateActivity));
@@ -149,7 +147,7 @@ public final class MaidBrain {
     private static void registerRideIdleGoals(Brain<EntityMaid> brain) {
         Pair<Integer, Behavior<? super EntityMaid>> beg = Pair.of(4, new MaidRideBegTask());
         Pair<Integer, Behavior<? super EntityMaid>> homeMeal = Pair.of(5, new MaidHomeMealTask());
-        Pair<Integer, Behavior<? super EntityMaid>> look = Pair.of(6, getLook());
+        Pair<Integer, Behavior<? super EntityMaid>> look = Pair.of(6, getLook(maid -> true));
         Pair<Integer, Behavior<? super EntityMaid>> updateActivity = Pair.of(99, new MaidUpdateActivityFromSchedule());
 
         brain.addActivity(InitEntities.RIDE_IDLE.get(), ImmutableList.of(beg, homeMeal, look, updateActivity));
@@ -166,9 +164,7 @@ public final class MaidBrain {
         }
         pairMaidList.add(Pair.of(6, new MaidRideBegTask()));
         pairMaidList.add(Pair.of(7, new MaidWorkMealTask()));
-        if (task.enableLookAndRandomWalk(maid)) {
-            pairMaidList.add(Pair.of(20, getLook()));
-        }
+        pairMaidList.add(Pair.of(20, getLook(e -> e.getTask().enableLookAndRandomWalk(e))));
         brain.addActivity(InitEntities.RIDE_WORK.get(), ImmutableList.copyOf(pairMaidList));
     }
 
@@ -177,30 +173,30 @@ public final class MaidBrain {
         brain.addActivity(InitEntities.RIDE_REST.get(), ImmutableList.of(updateActivity));
     }
 
-    private static Behavior<? super EntityMaid> getLookAndRandomWalk() {
+    private static Behavior<? super EntityMaid> getLook(Predicate<EntityMaid> enableCondition) {
         Pair<Behavior<? super EntityMaid>, Integer> lookToPlayer = Pair.of(new SetEntityLookTarget(EntityType.PLAYER, 5), 1);
         Pair<Behavior<? super EntityMaid>, Integer> lookToMaid = Pair.of(new SetEntityLookTarget(EntityMaid.TYPE, 5), 1);
         Pair<Behavior<? super EntityMaid>, Integer> lookToWolf = Pair.of(new SetEntityLookTarget(EntityType.WOLF, 5), 1);
         Pair<Behavior<? super EntityMaid>, Integer> lookToCat = Pair.of(new SetEntityLookTarget(EntityType.CAT, 5), 1);
         Pair<Behavior<? super EntityMaid>, Integer> lookToParrot = Pair.of(new SetEntityLookTarget(EntityType.PARROT, 5), 1);
+        Pair<Behavior<? super EntityMaid>, Integer> noLook = Pair.of(new DoNothing(30, 60), 2);
+        RunOne<EntityMaid> firstShuffledTask = new RunOne<>(ImmutableList.of(lookToPlayer, lookToMaid, lookToWolf, lookToCat, lookToParrot, noLook));
+        return new RunIf<>(enableCondition, firstShuffledTask);
+    }
+
+    private static Behavior<? super EntityMaid> getLookAndRandomWalk(Predicate<EntityMaid> enableCondition) {
+        Pair<Behavior<? super EntityMaid>, Integer> lookToPlayer = Pair.of(new SetEntityLookTarget(EntityType.PLAYER, 5), 1);
+        Pair<Behavior<? super EntityMaid>, Integer> lookToMaid = Pair.of(new SetEntityLookTarget(EntityMaid.TYPE, 5), 1);
+        Pair<Behavior<? super EntityMaid>, Integer> lookToWolf = Pair.of(new SetEntityLookTarget(EntityType.WOLF, 5), 1);
+        Pair<Behavior<? super EntityMaid>, Integer> lookToCat = Pair.of(new SetEntityLookTarget(EntityType.CAT, 5), 1);
+        Pair<Behavior<? super EntityMaid>, Integer> lookToParrot = Pair.of(new SetEntityLookTarget(EntityType.PARROT, 5), 1);
+        Pair<Behavior<? super EntityMaid>, Integer> noLook = Pair.of(new DoNothing(30, 60), 2);
         Pair<Behavior<? super EntityMaid>, Integer> walkRandomly = Pair.of(new MaidRandomStroll(0.3f, 5, 3), 1);
-        Pair<Behavior<? super EntityMaid>, Integer> noLook = Pair.of(new DoNothing(30, 60), 2);
-        RunOne<EntityMaid> firstShuffledTask = new RunOne<>(ImmutableList.of(lookToPlayer, lookToMaid, lookToWolf, lookToCat, lookToParrot, noLook));
-        return new RunIf<>(MaidBrain::lookAroundCondition, firstShuffledTask);
+        RunOne<EntityMaid> firstShuffledTask = new RunOne<>(ImmutableList.of(lookToPlayer, lookToMaid, lookToWolf, lookToCat, lookToParrot, walkRandomly, noLook));
+        return new RunIf<>(e -> lookAroundCondition(e, enableCondition), firstShuffledTask);
     }
 
-    private static Behavior<? super EntityMaid> getLook() {
-        Pair<Behavior<? super EntityMaid>, Integer> lookToPlayer = Pair.of(new SetEntityLookTarget(EntityType.PLAYER, 5), 1);
-        Pair<Behavior<? super EntityMaid>, Integer> lookToMaid = Pair.of(new SetEntityLookTarget(EntityMaid.TYPE, 5), 1);
-        Pair<Behavior<? super EntityMaid>, Integer> lookToWolf = Pair.of(new SetEntityLookTarget(EntityType.WOLF, 5), 1);
-        Pair<Behavior<? super EntityMaid>, Integer> lookToCat = Pair.of(new SetEntityLookTarget(EntityType.CAT, 5), 1);
-        Pair<Behavior<? super EntityMaid>, Integer> lookToParrot = Pair.of(new SetEntityLookTarget(EntityType.PARROT, 5), 1);
-        Pair<Behavior<? super EntityMaid>, Integer> noLook = Pair.of(new DoNothing(30, 60), 2);
-        RunOne<EntityMaid> firstShuffledTask = new RunOne<>(ImmutableList.of(lookToPlayer, lookToMaid, lookToWolf, lookToCat, lookToParrot, noLook));
-        return new RunIf<>(MaidBrain::lookAroundCondition, firstShuffledTask);
-    }
-
-    public static boolean lookAroundCondition(EntityMaid maid) {
-        return !maid.isBegging() && !(maid.getVehicle() instanceof EntitySit) && !maid.isSleeping();
+    public static boolean lookAroundCondition(EntityMaid maid, Predicate<EntityMaid> enableCondition) {
+        return enableCondition.test(maid) && !maid.isBegging() && !(maid.getVehicle() instanceof EntitySit) && !maid.isSleeping();
     }
 }
