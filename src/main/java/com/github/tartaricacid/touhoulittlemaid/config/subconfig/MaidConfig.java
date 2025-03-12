@@ -89,20 +89,24 @@ public final class MaidConfig {
         MAID_NON_HOME_RANGE = builder.defineInRange("MaidNonHomeRange", 8, 3, 32);
 
         builder.comment("The max number of animals around when the maid breeds animals")
-                .translation(translateKey("feed_animal_max_number"));
+                .translation(translateKey("bow_range"));
         builder.comment("The max range of maid's bow attack");
         BOW_RANGE = builder.defineInRange("BowRange", 48, 8, 192);
 
-        builder.comment("The max range of maid's crossbow attack");
+        builder.comment("The max range of maid's crossbow attack")
+                .translation(translateKey("cross_bow_range"));
         CROSS_BOW_RANGE = builder.defineInRange("CrossbowRange", 64, 8, 192);
 
-        builder.comment("The max range of maid's danmaku attack");
+        builder.comment("The max range of maid's danmaku attack")
+                .translation(translateKey("danmaku_range"));
         DANMAKU_RANGE = builder.defineInRange("DanmakuRange", 64, 8, 192);
 
-        builder.comment("The max range of maid's trident attack");
+        builder.comment("The max range of maid's trident attack")
+                .translation(translateKey("trident_range"));
         TRIDENT_RANGE = builder.defineInRange("TridentRange", 48, 8, 192);
 
-        builder.comment("The max number of animals around when the maid breeds animals");
+        builder.comment("The max number of animals around when the maid breeds animals")
+                .translation(translateKey("feed_animal_max_number"));
         FEED_ANIMAL_MAX_NUMBER = builder.defineInRange("FeedAnimalMaxNumber", 50, 6, 65536);
 
         builder.comment("Maid can switch models freely")

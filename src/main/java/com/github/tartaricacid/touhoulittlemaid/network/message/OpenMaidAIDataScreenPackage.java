@@ -61,7 +61,7 @@ public record OpenMaidAIDataScreenPackage(int entityId, MaidAIDataSerializable d
             if (ModList.get().isLoaded(CompatRegistry.CLOTH_CONFIG)) {
                 ClothConfigCompat.openPartAiSettingScreen(maid);
             } else if (mc.player != null) {
-                mc.player.sendSystemMessage(Component.literal("Cloth config mod not loaded").withStyle(ChatFormatting.RED));
+                mc.player.sendSystemMessage(Component.translatable("gui.touhou_little_maid.cloth_config_warning.tips").withStyle(ChatFormatting.RED));
             }
         }
     }

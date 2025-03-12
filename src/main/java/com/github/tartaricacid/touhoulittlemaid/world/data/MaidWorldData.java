@@ -32,11 +32,10 @@ public class MaidWorldData extends SavedData {
     private final Map<UUID, List<MaidInfo>> infos = Maps.newHashMap();
     private final Map<UUID, List<MaidInfo>> tombstones = Maps.newHashMap();
 
-    //TODO 可能是ENTITY_CHUNK吧
     public static SavedData.Factory<MaidWorldData> factory() {
+        // 可能是 ENTITY_CHUNK 吧
         return new SavedData.Factory<>(MaidWorldData::new, MaidWorldData::load, DataFixTypes.ENTITY_CHUNK);
     }
-
 
     @Nullable
     public static MaidWorldData get(Level level) {
@@ -62,7 +61,10 @@ public class MaidWorldData extends SavedData {
                 for (int i = 0; i < listTag.size(); i++) {
                     CompoundTag infoTag = listTag.getCompound(i);
                     String dimension = infoTag.getString("Dimension");
-                    BlockPos chunkPos = NbtUtils.readBlockPos(infoTag, "ChunkPos").orElse(null);
+                    @Nullable BlockPos chunkPos = NbtUtils.readBlockPos(infoTag, "ChunkPos").orElse(null);
+                    if (chunkPos == null) {
+                        continue;
+                    }
                     UUID ownerId = infoTag.getUUID("OwnerId");
                     UUID maidId = infoTag.getUUID("MaidId");
                     long timestamp = infoTag.getLong("Timestamp");
@@ -79,7 +81,10 @@ public class MaidWorldData extends SavedData {
                 for (int i = 0; i < listTag.size(); i++) {
                     CompoundTag infoTag = listTag.getCompound(i);
                     String dimension = infoTag.getString("Dimension");
-                    BlockPos chunkPos = NbtUtils.readBlockPos(infoTag, "ChunkPos").orElse(null);
+                    @Nullable BlockPos chunkPos = NbtUtils.readBlockPos(infoTag, "ChunkPos").orElse(null);
+                    if (chunkPos == null) {
+                        continue;
+                    }
                     UUID ownerId = infoTag.getUUID("OwnerId");
                     UUID tombstoneId = infoTag.getUUID("TombstoneId");
                     long timestamp = infoTag.getLong("Timestamp");
@@ -98,6 +103,9 @@ public class MaidWorldData extends SavedData {
         infos.forEach((id, data) -> {
             ListTag listTag = new ListTag();
             data.forEach(info -> {
+                if (info.getChunkPos() == null) {
+                    return;
+                }
                 CompoundTag infoTag = new CompoundTag();
                 infoTag.putString("Dimension", info.getDimension());
                 infoTag.put("ChunkPos", NbtUtils.writeBlockPos(info.getChunkPos()));
@@ -114,6 +122,9 @@ public class MaidWorldData extends SavedData {
         tombstones.forEach((id, data) -> {
             ListTag listTag = new ListTag();
             data.forEach(info -> {
+                if (info.getChunkPos() == null) {
+                    return;
+                }
                 CompoundTag infoTag = new CompoundTag();
                 infoTag.putString("Dimension", info.getDimension());
                 infoTag.put("ChunkPos", NbtUtils.writeBlockPos(info.getChunkPos()));

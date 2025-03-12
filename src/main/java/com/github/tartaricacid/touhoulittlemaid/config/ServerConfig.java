@@ -6,6 +6,8 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 import java.util.List;
 
 public class ServerConfig {
+    private static final String TRANSLATE_KEY = "config.touhou_little_maid.render";
+
     // 客户端需要下载的包
     public static ModConfigSpec.ConfigValue<List<String>> CLIENT_PACK_DOWNLOAD_URLS;
 
@@ -23,5 +25,9 @@ public class ServerConfig {
         MAID_AI_TIME_DEBUG = builder.define("MaidAITimeDebug", false);
 
         return builder.build();
+    }
+
+    private static String translateKey(String key) {
+        return TRANSLATE_KEY + "." + key;
     }
 }
