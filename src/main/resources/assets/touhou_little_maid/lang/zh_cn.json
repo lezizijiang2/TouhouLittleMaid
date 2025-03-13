@@ -721,7 +721,7 @@
   "task.touhou_little_maid.feed_animal.condition.assault_weapon": "主手持有攻击性武器（用于杀死超过上限的动物）",
   "task.touhou_little_maid.extinguishing.desc": "女仆会主动扑灭周围的火",
   "task.touhou_little_maid.extinguishing.condition.has_extinguisher": "主手持有灭火器",
-  "task.touhou_little_maid.board_games.desc": "女仆会寻找周围的五子棋盘",
+  "task.touhou_little_maid.board_games.desc": "女仆会寻找周围的棋盘",
   "task.touhou_little_maid.gun_attack.desc": "女仆会使用永恒枪械工坊：零的枪械",
   "task.touhou_little_maid.gun_attack.condition.has_tacz_gun": "主手持有永恒枪械工坊：零的枪械",
   "task.touhou_little_maid.fishing.desc": "女仆会寻找椅子并坐在上面，然后开始钓鱼",

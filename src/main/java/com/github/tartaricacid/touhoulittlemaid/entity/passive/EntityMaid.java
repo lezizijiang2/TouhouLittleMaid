@@ -456,11 +456,6 @@ public class EntityMaid extends TamableAnimal implements CrossbowAttackMob, IMai
             TouhouLittleMaid.LOGGER.error("Maid's AI taking too long! Time: {} ms, Pos: ({},{},{}), Task ID: {}, Search Range: {}",
                     timeMs, blockPos.getX(), blockPos.getY(), blockPos.getZ(), taskId, searchRange);
         }
-
-        // 掉落隐藏物品栏物品
-        if (this.tickCount % 5 == 0 && !this.isUsingItem() && !this.getHideInv().getStackInSlot(0).isEmpty()) {
-            this.backCurrentHandItemStack();
-        }
         super.customServerAiStep();
     }
 
