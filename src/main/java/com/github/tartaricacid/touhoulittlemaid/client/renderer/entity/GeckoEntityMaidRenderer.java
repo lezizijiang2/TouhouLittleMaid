@@ -37,7 +37,8 @@ public class GeckoEntityMaidRenderer<T extends Mob> extends GeoReplacedEntityRen
     @Override
     @SuppressWarnings("unchecked")
     public GeckoMaidEntity<T> getAnimatableEntity(T entity) {
-        return entity.getCapability(GeckoMaidEntityCapabilityProvider.CAP).map(e -> (GeckoMaidEntity<T>) e).orElse(new GeckoMaidEntity<>(entity, IMaid.convert(entity)));
+        return entity.getCapability(GeckoMaidEntityCapabilityProvider.CAP).map(e -> (GeckoMaidEntity<T>) e)
+                .orElseGet(() -> new GeckoMaidEntity<>(entity, IMaid.convert(entity)));
     }
 
     @Override
