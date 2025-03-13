@@ -715,7 +715,7 @@
   "task.touhou_little_maid.feed_animal.condition.assault_weapon": "Mainhand holds an assault weapon (kill excess creatures)",
   "task.touhou_little_maid.extinguishing.desc": "Maid will try to extinguish the surrounding fire",
   "task.touhou_little_maid.extinguishing.condition.has_extinguisher": "Mainhand holds an extinguisher",
-  "task.touhou_little_maid.board_games.desc": "Maid will search around the gomoku board",
+  "task.touhou_little_maid.board_games.desc": "Maid will search around the game board",
   "task.touhou_little_maid.gun_attack.desc": "Maid is able to use the TacZ gun",
   "task.touhou_little_maid.gun_attack.condition.has_tacz_gun": "Mainhand holds a TacZ gun",
   "task.touhou_little_maid.fishing.desc": "The maid will look for a chair around and sit on them, and then start fishing",
