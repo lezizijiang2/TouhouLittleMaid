@@ -103,6 +103,10 @@ public class MaidNodeEvaluator extends WalkNodeEvaluator {
     }
 
     private BlockPathTypes getMaidBlockPathTypeRaw(BlockGetter level, BlockPos pos) {
+        // 女仆在限定范围内寻路寻到了范围外，失败
+        if (this.mob instanceof EntityMaid maid && maid.isWithinRestriction() && !maid.isWithinRestriction(pos)) {
+            return BlockPathTypes.BLOCKED;
+        }
         BlockState blockState = level.getBlockState(pos);
         BlockPathTypes pathType = blockState.getBlockPathType(level, pos, null);
         if (pathType != null) {
