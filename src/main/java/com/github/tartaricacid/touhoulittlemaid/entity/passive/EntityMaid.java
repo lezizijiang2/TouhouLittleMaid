@@ -131,9 +131,11 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.common.CommonHooks;
 import net.neoforged.neoforge.common.ItemAbilities;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.damagesource.DamageContainer;
+import net.neoforged.neoforge.common.util.FakePlayer;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
 import net.neoforged.neoforge.items.ItemStackHandler;
@@ -259,6 +261,8 @@ public class EntityMaid extends TamableAnimal implements CrossbowAttackMob, IMai
     private final FavorabilityManager favorabilityManager;
     private final MaidScriptBookManager scriptBookManager;
     private final MaidSwimManager swimManager;
+    // 控制不同的 navigation 切换的条件以及切换后变更女仆相关的 AI 控制参数
+    private final MaidNavigationManager navigationManager;
     private final MaidAIChatManager aiChatManager;
     private final SchedulePos schedulePos;
     private final ItemCooldowns cooldowns;
@@ -298,6 +302,11 @@ public class EntityMaid extends TamableAnimal implements CrossbowAttackMob, IMai
      */
     private boolean alreadyDropped = false;
 
+    /**
+     * 爬梯的计时器，用于在爬梯后的一段时间内禁用摔落伤害
+     */
+    private int climbFallDelayTicks = 0;
+
     protected EntityMaid(EntityType<EntityMaid> type, Level world) {
         super(type, world);
         this.favorabilityManager = new FavorabilityManager(this);
@@ -310,6 +319,7 @@ public class EntityMaid extends TamableAnimal implements CrossbowAttackMob, IMai
 
         this.moveControl = new MaidMoveControl(this);
         this.swimManager = new MaidSwimManager(this);
+        this.navigationManager = new MaidNavigationManager(this);
 
         this.cooldowns = new ItemCooldowns();
     }
@@ -515,6 +525,10 @@ public class EntityMaid extends TamableAnimal implements CrossbowAttackMob, IMai
         if (playerHurtSoundCount > 0) {
             playerHurtSoundCount--;
         }
+        if (climbFallDelayTicks > 0) {
+            climbFallDelayTicks--;
+            this.fallDistance = 0;
+        }
         this.spawnPortalParticle();
         this.randomRestoreHealth();
         this.onMaidSleep();
@@ -560,6 +574,7 @@ public class EntityMaid extends TamableAnimal implements CrossbowAttackMob, IMai
     public void aiStep() {
         super.aiStep();
         this.updateSwingTime();
+        this.navigationManager.tick();
         if (!level.isClientSide) {
             ChatBubbleManger.tick(this);
             if (this.backpackData != null) {
@@ -591,6 +606,10 @@ public class EntityMaid extends TamableAnimal implements CrossbowAttackMob, IMai
 
     @Override
     public InteractionResult mobInteract(Player playerIn, InteractionHand hand) {
+        // 禁止 fake player 交互女仆
+        if (playerIn instanceof FakePlayer) {
+            return InteractionResult.PASS;
+        }
         if (hand == InteractionHand.MAIN_HAND && isOwnedBy(playerIn)) {
             ItemStack stack = playerIn.getMainHandItem();
             InteractMaidEvent event = new InteractMaidEvent(playerIn, this, stack);
@@ -812,6 +831,7 @@ public class EntityMaid extends TamableAnimal implements CrossbowAttackMob, IMai
         return false;
     }
 
+    @SuppressWarnings("ReferenceToMixin")
     private ItemStack getArrowFromEntity(AbstractArrow entity) {
         if (entity instanceof MixinArrowEntity mixinArrow) {
             if (mixinArrow.tlmInGround() || entity.isNoPhysics()) {
@@ -2284,8 +2304,34 @@ public class EntityMaid extends TamableAnimal implements CrossbowAttackMob, IMai
      */
     @Override
     public boolean onClimbable() {
-        boolean result = super.onClimbable();
+        boolean result = false;
+        Path path = this.navigation.getPath();
+        if (path != null && !path.isDone()) {
+            // 女仆是要爬梯子而不是路过梯子，那么也就意味着当前节点的前后必有一个节点是同坐标的
+            for (int i = Math.max(0, path.getNextNodeIndex() - 3); i < Math.min(path.getNodeCount(), path.getNextNodeIndex() + 3) - 1; i++) {
+                BlockPos pos1 = path.getNodePos(i);
+                BlockPos pos2 = path.getNodePos(i + 1);
+                if (pos1.getX() == pos2.getX() && pos1.getZ() == pos2.getZ()) {
+                    result = true;
+                    break;
+                }
+            }
+        }
         if (result) {
+            result = super.onClimbable();
+            // 用作脚手架和卡在梯子顶部的特判，避免女仆卡在脚手架顶上
+            if (!result && !this.isSpectator()) {
+                Optional<BlockPos> ladderPos = CommonHooks.isLivingOnLadder(
+                        level.getBlockState(blockPosition().below()),
+                        level(), blockPosition().below(), this);
+                if (ladderPos.isPresent()) {
+                    result = true;
+                }
+            }
+        }
+        if (result) {
+            // 爬梯后一段时间禁用摔落伤害
+            this.climbFallDelayTicks = 30;
             // 爬梯时，禁止旋转
             this.getLastClimbablePos().ifPresent(climbablePos -> {
                 BlockState blockState = this.level.getBlockState(climbablePos);
@@ -2329,15 +2375,21 @@ public class EntityMaid extends TamableAnimal implements CrossbowAttackMob, IMai
     @Override
     @SuppressWarnings("deprecation")
     public boolean isPushedByFluid() {
-        return !this.isSwimming();
+        return !this.getSwimManager().wantToSwim();
     }
 
     @Override
     public void travel(Vec3 travelVector) {
-        if (this.isControlledByLocalInstance() && this.isInWater() && this.getSwimManager().wantToSwim()) {
-            this.moveRelative(0.01F, travelVector);
-            this.move(MoverType.SELF, this.getDeltaMovement());
-            this.setDeltaMovement(this.getDeltaMovement().scale(0.9));
+        if (this.isControlledByLocalInstance() && isInWater()) {
+            if (this.getSwimManager().wantToSwim()) {
+                this.moveRelative(0.01F, travelVector);
+                this.move(MoverType.SELF, this.getDeltaMovement());
+                this.setDeltaMovement(this.getDeltaMovement().scale(0.9));
+            } else if (this.getSwimManager().isReadyToLand() || isUnderWater()) {
+                super.travel(travelVector.scale(1.2).add(0, 0.5, 0));
+            } else {
+                super.travel(travelVector.scale(1.2).add(0, 0.05, 0));
+            }
         } else {
             super.travel(travelVector);
         }
@@ -2410,5 +2462,9 @@ public class EntityMaid extends TamableAnimal implements CrossbowAttackMob, IMai
 
     public MaidAIChatManager getAiChatManager() {
         return aiChatManager;
+    }
+
+    public MaidNavigationManager getNavigationManager() {
+        return navigationManager;
     }
 }
