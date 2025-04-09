@@ -11,6 +11,16 @@
     "FishingHookPredicateMixin",
     "MixinArrowEntity",
     "MixinThrownTrident",
+    "PlayerMixin",
+    "MixinThrownTrident",
+    "PlayerMixin",
+    "CropBlockAccessor",
+    "EntityAccessor",
+    "EntityMixin",
+    "FishingHookPredicateMixin",
+    "MixinArrowEntity",
+    "MixinThrownTrident",
+    "NavigationMixin",
     "PlayerMixin"
   ],
   "client": [

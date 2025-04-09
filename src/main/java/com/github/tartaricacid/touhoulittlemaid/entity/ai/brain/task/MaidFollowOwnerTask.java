@@ -28,6 +28,11 @@ public class MaidFollowOwnerTask extends Behavior<EntityMaid> {
     }
 
     @Override
+    protected boolean checkExtraStartConditions(ServerLevel level, EntityMaid maid) {
+        return !maid.getSwimManager().isGoingToBreath();
+    }
+
+    @Override
     protected void start(ServerLevel worldIn, EntityMaid maid, long gameTimeIn) {
         LivingEntity owner = maid.getOwner();
         int startDistance = (int) maid.getRestrictRadius() - 2;
@@ -35,6 +40,7 @@ public class MaidFollowOwnerTask extends Behavior<EntityMaid> {
         if (ownerStateConditions(owner) && maidStateConditions(maid) && !maid.closerThan(owner, startDistance)) {
             if (!maid.closerThan(owner, minTeleportDistance)) {
                 teleportToOwner(maid, owner);
+                maid.getNavigationManager().resetNavigation();
             } else if (!ownerIsWalkTarget(maid, owner)) {
                 BehaviorUtils.setWalkAndLookTargetMemories(maid, owner, speedModifier, stopDistance);
             }

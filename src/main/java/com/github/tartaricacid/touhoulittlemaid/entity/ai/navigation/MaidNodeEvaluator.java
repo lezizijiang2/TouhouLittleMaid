@@ -2,6 +2,8 @@ package com.github.tartaricacid.touhoulittlemaid.entity.ai.navigation;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -11,6 +13,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.pathfinder.BlockPathTypes;
 import net.minecraft.world.level.pathfinder.Node;
 import net.minecraft.world.level.pathfinder.WalkNodeEvaluator;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * 该方法仅修改了栅栏门和梯子的寻路判断
@@ -25,6 +28,16 @@ public class MaidNodeEvaluator extends WalkNodeEvaluator {
     public int getNeighbors(Node[] outputArray, Node node) {
         int nodeId = super.getNeighbors(outputArray, node);
         return this.createClimbNode(nodeId, outputArray, node);
+    }
+
+    @Override
+    protected double getFloorLevel(BlockPos pPos) {
+        BlockPos blockpos = pPos.below();
+        //上下两格水，女仆会浮在水面上，尝试向陆地寻路？
+        if (level.getFluidState(blockpos).is(FluidTags.WATER) && level.getFluidState(pPos).is(FluidTags.WATER)) {
+            return pPos.getY();
+        }
+        return super.getFloorLevel(pPos);
     }
 
     // 将可爬行物加入寻路节点里头
@@ -70,9 +83,9 @@ public class MaidNodeEvaluator extends WalkNodeEvaluator {
             BlockPathTypes typeBelow = getMaidBlockPathTypeRaw(level, pos.set(x, y - 1, z));
 
             type = typeBelow != BlockPathTypes.WALKABLE
-                   && typeBelow != BlockPathTypes.OPEN
-                   && typeBelow != BlockPathTypes.WATER
-                   && typeBelow != BlockPathTypes.LAVA ? BlockPathTypes.WALKABLE : BlockPathTypes.OPEN;
+                    && typeBelow != BlockPathTypes.OPEN
+                    && typeBelow != BlockPathTypes.WATER
+                    && typeBelow != BlockPathTypes.LAVA ? BlockPathTypes.WALKABLE : BlockPathTypes.OPEN;
 
             if (typeBelow == BlockPathTypes.DAMAGE_FIRE) {
                 type = BlockPathTypes.DAMAGE_FIRE;
@@ -120,6 +133,11 @@ public class MaidNodeEvaluator extends WalkNodeEvaluator {
             pathType = BlockPathTypes.WALKABLE;
         } else {
             pathType = WalkNodeEvaluator.getBlockPathTypeRaw(level, pos);
+            // 判断目标方块的碰撞高度。有些半透明方块拥有超过 0.5（台阶）的高度，此时女仆是不能从其中穿过的，需要将其视为不可通行方块
+            VoxelShape shape = blockState.getCollisionShape(level, pos);
+            if (pathType != BlockPathTypes.BLOCKED && shape.max(Direction.Axis.Y) - shape.min(Direction.Axis.Y) > 0.5) {
+                pathType = BlockPathTypes.BLOCKED;
+            }
         }
         if (pathType == BlockPathTypes.DOOR_WOOD_CLOSED && this.mob instanceof EntityMaid maid && !this.canOpenDoor(blockState.getBlock(), maid)) {
             pathType = BlockPathTypes.DOOR_IRON_CLOSED;

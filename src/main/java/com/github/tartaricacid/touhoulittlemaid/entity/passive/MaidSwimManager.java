@@ -1,10 +1,12 @@
 package com.github.tartaricacid.touhoulittlemaid.entity.passive;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.ai.navigation.MaidPathNavigation;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.navigation.WaterBoundPathNavigation;
 import net.minecraft.world.level.pathfinder.BlockPathTypes;
+import org.jetbrains.annotations.Nullable;
 
 public class MaidSwimManager {
     /**
@@ -22,6 +24,20 @@ public class MaidSwimManager {
      * 主动游泳标志位
      */
     private boolean wantToSwim = false;
+
+    /**
+     * 游泳目标点，控制视角用
+     */
+    private BlockPos swimTarget = null;
+    /**
+     * 是否已经准备登陆，登陆时基于额外的加速度
+     */
+    private boolean readyToLand = false;
+    /**
+     * 是否准备前去呼吸，用于屏蔽距离传送
+     */
+    private boolean isGoingToBreath = false;
+
 
     public MaidSwimManager(EntityMaid maid) {
         this.maid = maid;
@@ -44,13 +60,6 @@ public class MaidSwimManager {
      */
     public void updateSwimming() {
         if (!maid.level.isClientSide) {
-            if (maid.isEffectiveAi() && maid.isInWater()) {
-                maid.setNavigation(this.waterNavigation);
-            } else {
-                maid.setNavigation(this.groundNavigation);
-                this.setWantToSwim(false);
-            }
-
             this.updatePose();
         }
     }
@@ -89,5 +98,33 @@ public class MaidSwimManager {
 
     public EntityDimensions getSwimmingDimensions() {
         return SWIMMING_DIMENSIONS;
+    }
+
+    public void setSwimTarget(BlockPos pos) {
+        this.swimTarget = pos;
+    }
+
+    @Nullable
+    public BlockPos getSwimTarget() {
+        if (!wantToSwim()) {
+            return null;
+        }
+        return swimTarget;
+    }
+
+    public void setReadyToLand(boolean readyToLand) {
+        this.readyToLand = readyToLand;
+    }
+
+    public boolean isReadyToLand() {
+        return readyToLand;
+    }
+
+    public void setGoingToBreath(boolean goingToBreath) {
+        isGoingToBreath = goingToBreath;
+    }
+
+    public boolean isGoingToBreath() {
+        return isGoingToBreath;
     }
 }
