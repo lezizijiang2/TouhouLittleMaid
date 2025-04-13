@@ -3,7 +3,6 @@ package com.github.tartaricacid.touhoulittlemaid.entity.ai.navigation;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DoorBlock;
@@ -101,15 +100,21 @@ public class MaidNodeEvaluator extends WalkNodeEvaluator {
         } else {
             pathType = context.getPathTypeFromState(pX, pY, pZ);
             // 判断目标方块的碰撞高度。有些半透明方块拥有超过 0.5（台阶）的高度，此时女仆是不能从其中穿过的，需要将其视为不可通行方块
-            VoxelShape shape = blockState.getCollisionShape(this.mob.level, pos);
-            if (pathType != PathType.BLOCKED && shape.max(Direction.Axis.Y) - shape.min(Direction.Axis.Y) > 0.5) {
-                pathType = PathType.BLOCKED;
+            if (!heightCheckExclusions(pathType)) {
+                VoxelShape shape = blockState.getCollisionShape(this.mob.level, pos);
+                if (pathType != PathType.BLOCKED && shape.max(Direction.Axis.Y) - shape.min(Direction.Axis.Y) > 0.5) {
+                    pathType = PathType.BLOCKED;
+                }
             }
         }
         if (pathType == PathType.DOOR_WOOD_CLOSED && this.mob instanceof EntityMaid maid && !this.canOpenDoor(blockState.getBlock(), maid)) {
             pathType = PathType.DOOR_IRON_CLOSED;
         }
         return pathType;
+    }
+
+    private boolean heightCheckExclusions(PathType pathType) {
+        return pathType == PathType.DOOR_OPEN || pathType == PathType.DOOR_WOOD_CLOSED;
     }
 
     private boolean canOpenDoor(Block block, EntityMaid maid) {
