@@ -78,6 +78,7 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
@@ -86,6 +87,7 @@ import net.minecraft.stats.Stats;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -124,6 +126,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.pathfinder.Path;
+import net.minecraft.world.level.pathfinder.PathType;
+import net.minecraft.world.level.pathfinder.WalkNodeEvaluator;
 import net.minecraft.world.level.portal.DimensionTransition;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
@@ -182,6 +186,8 @@ public class EntityMaid extends TamableAnimal implements CrossbowAttackMob, IMai
 
     // AI 超时检测
     private static final long WARNING_TIME_NANOS = Duration.ofMillis(50L).toNanos();
+    // 女仆传送到主人处的最大尝试次数
+    private static final int MAX_TELEPORT_ATTEMPTS_TIMES = 10;
 
     // YSM 女仆兼容同步数据
     private static final EntityDataAccessor<Boolean> DATA_IS_YSM_MODEL = SynchedEntityData.defineId(EntityMaid.class, EntityDataSerializers.BOOLEAN);
@@ -2466,5 +2472,70 @@ public class EntityMaid extends TamableAnimal implements CrossbowAttackMob, IMai
 
     public MaidNavigationManager getNavigationManager() {
         return navigationManager;
+    }
+
+    /**
+     * 参考自 <a href="https://github.com/Snownee/Companion/blob/1.20-forge/src/main/java/snownee/companion/Hooks.java#L313-L322">Snownee's Companion</a>
+     * <p>
+     * 更加高效的 owner 寻找方式
+     */
+    @Override
+    @Nullable
+    public LivingEntity getOwner() {
+        UUID uuid = this.getOwnerUUID();
+        if (uuid == null) {
+            return null;
+        }
+        MinecraftServer server = this.level().getServer();
+        if (server == null) {
+            return this.level().getPlayerByUUID(uuid);
+        }
+        return server.getPlayerList().getPlayer(uuid);
+    }
+
+    public boolean teleportToOwner(LivingEntity owner) {
+        BlockPos blockPos = owner.blockPosition();
+        for (int i = 0; i < MAX_TELEPORT_ATTEMPTS_TIMES; ++i) {
+            int x = this.randomIntInclusive(this.getRandom(), -3, 3);
+            int y = this.randomIntInclusive(this.getRandom(), -1, 1);
+            int z = this.randomIntInclusive(this.getRandom(), -3, 3);
+            if (maybeTeleportTo(owner, blockPos.getX() + x, blockPos.getY() + y, blockPos.getZ() + z)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean maybeTeleportTo(LivingEntity owner, int x, int y, int z) {
+        if (teleportTooClosed(owner, x, z)) {
+            return false;
+        } else if (!canTeleportTo(new BlockPos(x, y, z))) {
+            return false;
+        } else {
+            this.moveTo(x + 0.5, y, z + 0.5, this.getYRot(), this.getXRot());
+            this.getNavigation().stop();
+            this.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
+            this.getBrain().eraseMemory(MemoryModuleType.LOOK_TARGET);
+            this.getBrain().eraseMemory(MemoryModuleType.ATTACK_TARGET);
+            this.getBrain().eraseMemory(MemoryModuleType.PATH);
+            return true;
+        }
+    }
+
+    private boolean teleportTooClosed(LivingEntity owner, int x, int z) {
+        return Math.abs(x - owner.getX()) < 2 && Math.abs(z - owner.getZ()) < 2;
+    }
+
+    private boolean canTeleportTo(BlockPos pos) {
+        PathType pathNodeType = WalkNodeEvaluator.getPathTypeStatic(this, pos);
+        if (pathNodeType == PathType.WALKABLE || pathNodeType == PathType.WATER) {
+            BlockPos blockPos = pos.subtract(this.blockPosition());
+            return this.level().noCollision(this, this.getBoundingBox().move(blockPos));
+        }
+        return false;
+    }
+
+    private int randomIntInclusive(RandomSource random, int min, int max) {
+        return random.nextInt(max - min + 1) + min;
     }
 }
