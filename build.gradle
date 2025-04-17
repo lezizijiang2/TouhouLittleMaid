@@ -101,6 +101,10 @@ mixin {
 }
 
 repositories {
+    // 优先本地 libs 文件夹
+    flatDir {
+        dir 'libs'
+    }
     maven {
         name = "TerraformersMC"
         url = "https://maven.terraformersmc.com/"
@@ -161,11 +165,22 @@ dependencies {
     // mcLib "com.googlecode.soundlibs:tritonus-share:0.3.7.4"
 
     // Opus 音频解码库
-    mcLib "org.gagravarr:vorbis-java-core:0.8"
-    mcLib "io.github.jaredmdobson:concentus:1.0.2"
+    jarJar(minecraftLibrary("org.gagravarr:vorbis-java-core:0.8")) {
+        jarJar.ranged(it, "[0.8,)")
+    }
+    jarJar(minecraftLibrary("io.github.jaredmdobson:concentus:1.0.2")) {
+        jarJar.ranged(it, "[1.0.2,)")
+    }
 
     // YAML 库
-    mcLib "org.yaml:snakeyaml:2.4"
+    jarJar(minecraftLibrary("org.yaml:snakeyaml:2.4")) {
+        jarJar.ranged(it, "[2.4,)")
+    }
+
+    // 拆分出来的基岩版模型加载库
+    jarJar(implementation(fg.deobf("libs:simplebedrockmodel:1.19.2-release-1.1.0"))) {
+        jarJar.ranged(it, "[1.1.0,)")
+    }
 
     // 单元测试
     testImplementation 'junit:junit:4.13.2'
