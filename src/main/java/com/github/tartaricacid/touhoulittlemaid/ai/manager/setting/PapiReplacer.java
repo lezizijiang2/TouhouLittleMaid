@@ -3,11 +3,14 @@ package com.github.tartaricacid.touhoulittlemaid.ai.manager.setting;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.response.ResponseChat;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.Service;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.biome.Biome;
 import net.neoforged.neoforge.items.wrapper.RangedWrapper;
 import org.apache.commons.lang3.StringUtils;
 
@@ -32,6 +35,7 @@ public class PapiReplacer {
                 .replace("${owner_healthy}", getOwnerHealthyInfo(maid))
                 .replace("${armor_items}", getArmorItems(maid))
                 .replace("${effects}", getEffects(maid))
+                .replace("${biome}", getBiome(maid))
                 .replace("${owner_name}", getOwnerName(maid))
                 .replace("${custom_setting}", maid.getAiChatManager().getCustomSetting());
     }
@@ -47,6 +51,12 @@ public class PapiReplacer {
         }
         Locale locale = Locale.forLanguageTag(languageTag);
         return locale.getDisplayLanguage() + " (" + locale.getDisplayCountry() + ")";
+    }
+
+    private static String getBiome(EntityMaid maid) {
+        Biome biome = maid.level.getBiome(maid.blockPosition()).value();
+        ResourceLocation key = maid.level.registryAccess().registryOrThrow(Registries.BIOME).getKey(biome);
+        return key == null ? "未知 Biome" : key.toString();
     }
 
     private static String getEffects(EntityMaid maid) {

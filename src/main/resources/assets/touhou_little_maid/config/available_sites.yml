@@ -33,6 +33,15 @@ aliyun:
     - qwen-turbo
     - qwen-long
 
+deepseek:
+  # 最近 deepseek 的 JSON 输出 bug 修好了，能用了
+  type: chat
+  url: https://api.deepseek.com
+  api_key:
+  models:
+    # 不支持推理模型，推理模型也不适合文本对话
+    - deepseek-chat
+
 system:
   # 系统 TTS，虽然质量很差很差，但是好在响应速度快，而且系统自带，无需配置
   type: tts
@@ -59,7 +68,7 @@ gpt-sovits:
     # 可填写 zh ja en，上面提示词的语种
     prompt_lang: zh
     # 切句方式，一般不要变
-    text_split_method: cut4
+    text_split_method: cut1
 
 fish-audio:
   type: tts

@@ -51,7 +51,9 @@ public final class Service {
                     .model(model)
                     .temperature(chatTemperature)
                     .setResponseFormat(ResponseFormat.json())
-                    .systemChat(setting);
+                    .systemChat(setting)
+                    // 塞入一个参考回应，能让 AI 尽可能遵循参考格式进行回复
+                    .assistantChat("{\"chat_text\":\"看到你真开心！要不要一起去挖矿？\",\"tts_text\":\"看到你真开心！要不要一起去挖矿？\"}");
 
             // 倒序遍历，将历史对话加载进去
             history.getDeque().descendingIterator().forEachRemaining(historyChat -> {
@@ -63,6 +65,9 @@ public final class Service {
                     chatCompletion.assistantChat(message);
                 }
             });
+
+            // 最后强调一下语言类型
+            chatCompletion.userChat(String.format("请用%s语言回复 chat_text 部分！并用%s语言回复 tts_text 部分！", language, chatManager.getTtsLanguage()));
 
             return chatCompletion;
         }).orElse(null);
