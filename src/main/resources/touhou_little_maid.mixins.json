@@ -21,7 +21,8 @@
     "MixinArrowEntity",
     "MixinThrownTrident",
     "NavigationMixin",
-    "PlayerMixin"
+    "PlayerMixin",
+    "PersistentEntitySectionManagerMixin"
   ],
   "client": [
     "client.HumanoidModelMixin",

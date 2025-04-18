@@ -11,9 +11,8 @@ buildscript {
         gradlePluginPortal()
     }
     dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '[6.0,6.2)', changing: true
         classpath 'org.parchmentmc:librarian:1.+'
-        classpath 'gradle.plugin.com.github.johnrengelman:shadow:7.1.2'
         classpath group: 'org.spongepowered', name: 'mixingradle', version: '0.7-SNAPSHOT'
     }
 }
@@ -24,7 +23,6 @@ apply plugin: 'org.parchmentmc.librarian.forgegradle'
 apply plugin: 'org.spongepowered.mixin'
 apply plugin: 'java'
 apply plugin: 'idea'
-apply plugin: 'com.github.johnrengelman.shadow'
 
 version = mod_version
 group = 'com.github.tartaricacid'
@@ -102,24 +100,9 @@ mixin {
 }
 
 repositories {
-    maven {
-        name = "TerraformersMC"
-        url = "https://maven.terraformersmc.com/"
-    }
-    maven {
-        // location of the maven that hosts JEI files
-        name = "Progwml6 Maven"
-        url = "https://dvs1.progwml6.com/files/maven/"
-    }
-    maven {
-        // location of a maven mirror for JEI files, as a fallback
-        name = "ModMaven"
-        url = "https://modmaven.dev"
-    }
-    maven {
-        // location of a maven mirror for JEI files, as a fallback
-        name = "Mod Maven"
-        url = "https://modmaven.k-4u.nl"
+    // 优先本地 libs 文件夹
+    flatDir {
+        dir 'libs'
     }
     maven {
         name = "Curse Maven"
@@ -129,28 +112,28 @@ repositories {
         }
     }
     maven {
-        // Patchouli
-        name 'Jared Maven'
-        url 'https://maven.blamejared.com/'
-    }
-    maven {
-        url "https://maven.shedaniel.me/"
-    }
-    maven {
         url = "https://api.modrinth.com/maven"
+        content {
+            includeGroup "maven.modrinth"
+        }
     }
     maven {
-        url = "https://maven.conczin.net/Artifacts"
-    }
-    maven {
-        // location of the maven that hosts JEI files since January 2023
-        name = "Jared's maven"
-        url = "https://maven.blamejared.com/"
+        // location of the maven that hosts JEI files
+        name = "Progwml6 Maven"
+        url = "https://dvs1.progwml6.com/files/maven/"
+        content {
+            includeGroup "mezz.jei"
+            includeGroup "vazkii.patchouli"
+        }
     }
     maven {
         // location of a maven mirror for JEI files, as a fallback
         name = "ModMaven"
         url = "https://modmaven.dev"
+        content {
+            includeGroup "mezz.jei"
+            includeGroup "vazkii.patchouli"
+        }
     }
 }
 
@@ -171,11 +154,22 @@ dependencies {
     // mcLib "com.googlecode.soundlibs:tritonus-share:0.3.7.4"
 
     // Opus 音频解码库
-    mcLib "org.gagravarr:vorbis-java-core:0.8"
-    mcLib "io.github.jaredmdobson:concentus:1.0.2"
+    jarJar(minecraftLibrary("org.gagravarr:vorbis-java-core:0.8")) {
+        jarJar.ranged(it, "[0.8,)")
+    }
+    jarJar(minecraftLibrary("io.github.jaredmdobson:concentus:1.0.2")) {
+        jarJar.ranged(it, "[1.0.2,)")
+    }
 
     // YAML 库
-    mcLib "org.yaml:snakeyaml:2.4"
+    jarJar(minecraftLibrary("org.yaml:snakeyaml:2.4")) {
+        jarJar.ranged(it, "[2.4,)")
+    }
+
+    // 拆分出来的基岩版模型加载库
+    jarJar(implementation(fg.deobf("libs:simplebedrockmodel:1.18.2-release-1.1.0"))) {
+        jarJar.ranged(it, "[1.1.0,)")
+    }
 
     // 单元测试
     testImplementation 'junit:junit:4.13.2'
@@ -190,8 +184,6 @@ dependencies {
     compileOnly fg.deobf("vazkii.patchouli:Patchouli:${patchouli_version}")
     runtimeOnly fg.deobf("vazkii.patchouli:Patchouli:${patchouli_version}")
 
-    runtimeOnly fg.deobf("teamtwilight:twilightforest:${twilight_forest_version}:universal")
-
     implementation fg.deobf("curse.maven:jade-324717:${jade_id}")
     implementation fg.deobf("curse.maven:the-one-probe-245211:${top_id}")
 
@@ -204,16 +196,9 @@ dependencies {
 
     implementation fg.deobf("curse.maven:iron-chests-228756:${iron_chests_id}")
 
-    runtimeOnly fg.deobf("curse.maven:carry-on-274259:${carry_on_id}")
-
     runtimeOnly "curse.maven:kotlin-for-forge-351264:${kotlin_id}"
     runtimeOnly fg.deobf("curse.maven:libipn-679177:${libipn_id}")
     implementation fg.deobf("curse.maven:inventory-profiles-next-495267:${ipn_id}")
-
-    runtimeOnly fg.deobf("curse.maven:catalogue-459701:${catalogue_id}")
-
-    runtimeOnly fg.deobf("curse.maven:bookshelf-228525:${bookshelf_id}")
-    runtimeOnly fg.deobf("curse.maven:enchantment-descriptions-250419:${enchantment_descriptions_id}")
 
     implementation fg.deobf('curse.maven:timeless-and-classics-zero-1028108:5722012')
 
@@ -222,42 +207,17 @@ dependencies {
 
     implementation fg.deobf("curse.maven:aquaculture-60028:4501726")
 
-    runtimeOnly fg.deobf("maven.modrinth:better-advancements:0.1.2.125-forge")
-
     runtimeOnly fg.deobf("maven.modrinth:embeddium:0.3.18+mc1.18.2")
     runtimeOnly fg.deobf('maven.modrinth:oculus:1.18.2-1.6.4')
 
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
-}
 
-shadowJar {
-    configurations = [project.configurations.mcLib]
-
-    // MP3 音频库 居然会把 junit 打包进去……
-    dependencies {
-        exclude(dependency('junit:junit'))
-    }
-
-    // 包重定向
-    // relocate 'javazoom.jl', 'com.github.tartaricacid.touhoulittlemaid.libs.jl'
-    // relocate 'javazoom.spi', 'com.github.tartaricacid.touhoulittlemaid.libs.spi'
-    // relocate 'org.tritonus', 'com.github.tartaricacid.touhoulittlemaid.libs.tritonus'
-    relocate 'io.github.jaredmdobson.concentus', 'com.github.tartaricacid.touhoulittlemaid.libs.concentus'
-    relocate 'org.gagravarr', 'com.github.tartaricacid.touhoulittlemaid.libs.gagravarr'
-    relocate 'org.yaml.snakeyaml', 'com.github.tartaricacid.touhoulittlemaid.libs.snakeyaml'
-
-    // 排除不需要的依赖项和资源
-    exclude 'META-INF/maven/**/*'
-    exclude 'META-INF/versions/**/*'
-    // 这个版权许可都已经手动添加进 licenses 里了
-    exclude 'META-INF/LICENSE'
-
-    mergeServiceFiles()
-    minimize()
-}
-
-reobf {
-    shadowJar {}
+    // runtimeOnly fg.deobf("teamtwilight:twilightforest:${twilight_forest_version}:universal")
+    // runtimeOnly fg.deobf("curse.maven:carry-on-274259:${carry_on_id}")
+    // runtimeOnly fg.deobf("curse.maven:catalogue-459701:${catalogue_id}")
+    // runtimeOnly fg.deobf("curse.maven:bookshelf-228525:${bookshelf_id}")
+    // runtimeOnly fg.deobf("curse.maven:enchantment-descriptions-250419:${enchantment_descriptions_id}")
+    // runtimeOnly fg.deobf("maven.modrinth:better-advancements:0.1.2.125-forge")
 }
 
 tasks.compileJava {
@@ -277,7 +237,6 @@ jar {
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
-
 
 // 让 idea 主动下载前置库的源码和 Javadoc
 // 新版本 idea 默认不会下载这两个，这虽然加快了构建速度，但是不方便调试
