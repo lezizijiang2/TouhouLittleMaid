@@ -18,7 +18,7 @@ public class GeoBone {
     private final String name;
     private final Vector3f pivot;
     private final Vector3f rotation;
-    private final GeoMesh cubes;
+    private final List<GeoCube> cubes;
 
     private final Boolean mirror;
     private final Double inflate;
@@ -31,12 +31,12 @@ public class GeoBone {
     private final BoneSnapshot initialSnapshot;
     private final boolean glow;
 
-    public GeoBone(List<GeoBone> children, String name, Vector3f pivot, Vector3f rotation, GeoMesh mesh, Boolean mirror, Double inflate, Boolean dontRender, Boolean reset) {
+    public GeoBone(List<GeoBone> children, String name, Vector3f pivot, Vector3f rotation, List<GeoCube> cubes, Boolean mirror, Double inflate, Boolean dontRender, Boolean reset) {
         this.children = ObjectLists.unmodifiable(new ObjectArrayList<>(children));
         this.name = name;
         this.pivot = pivot;
         this.rotation = rotation;
-        this.cubes = mesh;
+        this.cubes = ObjectLists.unmodifiable(new ObjectArrayList<>(cubes));
 
         this.mirror = mirror;
         this.inflate = inflate;
@@ -55,7 +55,7 @@ public class GeoBone {
         return children;
     }
 
-    public GeoMesh cubes() {
+    public List<GeoCube> cubes() {
         return cubes;
     }
 
