@@ -1,5 +1,6 @@
 package com.github.tartaricacid.touhoulittlemaid.compat.patchouli;
 
+import com.github.tartaricacid.touhoulittlemaid.TouhouLittleMaid;
 import com.github.tartaricacid.touhoulittlemaid.crafting.AltarRecipe;
 import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
 import com.github.tartaricacid.touhoulittlemaid.init.InitRecipes;
@@ -31,7 +32,7 @@ public class AltarRecipeComponent implements IComponentProcessor {
     private static final String OUTPUT_ENTITY = "output_entity";
     private static final String OUTPUT_DESC = "output_desc";
 
-    private AltarRecipe recipe;
+    private @Nullable AltarRecipe recipe;
 
     @SuppressWarnings("all")
     @Override
@@ -45,7 +46,9 @@ public class AltarRecipeComponent implements IComponentProcessor {
                 return;
             }
         }
-        throw new IllegalStateException("Altar recipe not found: " + recipeId);
+        this.recipe = new AltarRecipe(new ResourceLocation(TouhouLittleMaid.MOD_ID, "empty"),
+                EntityType.ITEM, null, 0, Ingredient.EMPTY);
+        TouhouLittleMaid.LOGGER.error("Altar recipe not found: {}", recipeId);
     }
 
     @Nullable
