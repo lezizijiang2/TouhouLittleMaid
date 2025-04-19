@@ -68,12 +68,11 @@ public interface IGeoRenderer<T> {
     default void renderRecursively(AnimatedGeoBone bone, PoseStack poseStack, VertexConsumer buffer, int packedLight,
                                    int packedOverlay, float red, float green, float blue, float alpha) {
         int cubePackedLight = bone.geoBone().glow() ? LightTexture.pack(15, 15) : packedLight;
-        poseStack.pushPose();
-        boolean scaleAllIsZero = RenderUtils.prepMatrixForBone(poseStack, bone);
-        if (scaleAllIsZero) {
-            poseStack.popPose();
+        if ((bone.getScaleX() == 0 ? 0 : 1) + (bone.getScaleY() == 0 ? 0 : 1) + (bone.getScaleZ() == 0 ? 0 : 1) < 2) {
             return;
         }
+        poseStack.pushPose();
+        RenderUtils.prepMatrixForBone(poseStack, bone);
         if (!SodiumCompat.sodiumRenderCubesOfBone(bone, poseStack, buffer, cubePackedLight, packedOverlay, red, green, blue, alpha)) {
             renderCubesOfBone(bone, poseStack, buffer, cubePackedLight, packedOverlay, red, green, blue, alpha);
         }
