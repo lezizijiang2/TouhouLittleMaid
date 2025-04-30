@@ -32,6 +32,17 @@ public class TagItem extends ItemTagsProvider {
         this.tag(GOHEI_ENCHANTABLE).add(InitItems.HAKUREI_GOHEI.asItem());
         this.tag(GOHEI_ENCHANTABLE).add(InitItems.SANAE_GOHEI.asItem());
 
+        this.tag(ItemTags.DURABILITY_ENCHANTABLE).add(InitItems.HAKUREI_GOHEI.asItem())
+                .add(InitItems.SANAE_GOHEI.asItem())
+                .add(InitItems.ULTRAMARINE_ORB_ELIXIR.asItem())
+                .add(InitItems.EXPLOSION_PROTECT_BAUBLE.asItem())
+                .add(InitItems.FIRE_PROTECT_BAUBLE.asItem())
+                .add(InitItems.PROJECTILE_PROTECT_BAUBLE.asItem())
+                .add(InitItems.MAGIC_PROTECT_BAUBLE.asItem())
+                .add(InitItems.FALL_PROTECT_BAUBLE.asItem())
+                .add(InitItems.DROWN_PROTECT_BAUBLE.asItem())
+                .add(InitItems.NIMBLE_FABRIC.asItem());
+
         this.tag(MAID_PLANTABLE_SEEDS).addTag(ItemTags.VILLAGER_PLANTABLE_SEEDS);
         this.tag(MAID_PLANTABLE_SEEDS).add(Items.NETHER_WART);
 
