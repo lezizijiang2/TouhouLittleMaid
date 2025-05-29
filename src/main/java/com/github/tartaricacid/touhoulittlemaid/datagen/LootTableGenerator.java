@@ -6,14 +6,13 @@ import com.github.tartaricacid.touhoulittlemaid.block.BlockScarecrow;
 import com.github.tartaricacid.touhoulittlemaid.init.InitBlocks;
 import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
 import com.github.tartaricacid.touhoulittlemaid.init.InitItems;
+import com.github.tartaricacid.touhoulittlemaid.loot.SetTankCountFunction;
 import com.google.common.collect.Sets;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.loot.BlockLootSubProvider;
 import net.minecraft.data.loot.EntityLootSubProvider;
 import net.minecraft.data.loot.LootTableSubProvider;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
@@ -32,9 +31,6 @@ import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
 import net.minecraft.world.level.storage.loot.functions.SetItemDamageFunction;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.FluidType;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -138,15 +134,14 @@ public class LootTableGenerator {
                     .add(LootItem.lootTableItem(InitItems.CRAFTING_TABLE_BACKPACK.get()))
                     .add(EmptyLootItem.emptyItem().setWeight(8))));
 
-            // FIXME 因为 1.21 的变化，暂时禁用地狱生成熔岩储罐
-//            var tank1 = LootItem.lootTableItem(InitItems.TANK_BACKPACK.get()).apply(SetNbtFunction.setTag(getLavaFluidStackTag(9)));
-//            var tank2 = LootItem.lootTableItem(InitItems.TANK_BACKPACK.get()).apply(SetNbtFunction.setTag(getLavaFluidStackTag(4)));
-//            var tank3 = LootItem.lootTableItem(InitItems.TANK_BACKPACK.get()).apply(SetNbtFunction.setTag(getLavaFluidStackTag(3)));
+            var tank1 = LootItem.lootTableItem(InitItems.TANK_BACKPACK.get()).apply(new SetTankCountFunction.Builder(Fluids.LAVA, 9));
+            var tank2 = LootItem.lootTableItem(InitItems.TANK_BACKPACK.get()).apply(new SetTankCountFunction.Builder(Fluids.LAVA, 4));
+            var tank3 = LootItem.lootTableItem(InitItems.TANK_BACKPACK.get()).apply(new SetTankCountFunction.Builder(Fluids.LAVA, 3));
 
-//            consumer.accept(TANK_BACKPACK, LootTable.lootTable().withPool(LootPool.lootPool()
-//                    .setRolls(ConstantValue.exactly(1))
-//                    .add(tank1).add(tank2).add(tank3)
-//                    .add(EmptyLootItem.emptyItem().setWeight(12))));
+            consumer.accept(TANK_BACKPACK, LootTable.lootTable().withPool(LootPool.lootPool()
+                    .setRolls(ConstantValue.exactly(1))
+                    .add(tank1).add(tank2).add(tank3)
+                    .add(EmptyLootItem.emptyItem().setWeight(12))));
 
             consumer.accept(ENDER_CHEST_BACKPACK, LootTable.lootTable().withPool(LootPool.lootPool()
                     .setRolls(ConstantValue.exactly(1))
@@ -203,14 +198,6 @@ public class LootTableGenerator {
                             .setRolls(ConstantValue.exactly(1))
                             .add(LootItem.lootTableItem(InitItems.SHRINE.get()))
                             .add(EmptyLootItem.emptyItem())));
-        }
-
-        @NotNull
-        private CompoundTag getLavaFluidStackTag(int count) {
-            CompoundTag tankTag = new CompoundTag();
-            FluidStack fluidStack = new FluidStack(Fluids.LAVA, count * FluidType.BUCKET_VOLUME);
-            tankTag.put("Tanks", FluidStack.CODEC.encodeStart(NbtOps.INSTANCE, fluidStack).getOrThrow());
-            return tankTag;
         }
     }
 

@@ -56,6 +56,7 @@ public final class TouhouLittleMaid {
         InitDataAttachment.ATTACHMENT_TYPES.register(eventBus);
         InitDataComponent.DATA_COMPONENTS.register(eventBus);
         InitLootCondition.LOOT_CONDITION_TYPES.register(eventBus);
+        InitLootCondition.LOOT_CONDITION_FUNCTIONS.register(eventBus);
 
         eventBus.addListener(NetworkHandler::registerPacket);
         eventBus.addListener(InitCapabilities::registerGenericItemHandlers);
