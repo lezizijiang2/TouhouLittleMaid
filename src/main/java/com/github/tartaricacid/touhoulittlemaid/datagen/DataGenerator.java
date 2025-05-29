@@ -51,6 +51,7 @@ public class DataGenerator {
         generator.addProvider(event.includeServer(), new DamageTypeGenerator(pack, event.getLookupProvider(), event.getExistingFileHelper()));
         generator.addProvider(event.includeServer(), new EntityTypeGenerator(pack, event.getLookupProvider(), event.getExistingFileHelper()));
         generator.addProvider(event.includeServer(), new TagRecipeSerializer(pack, event.getLookupProvider(), event.getExistingFileHelper()));
+        generator.addProvider(event.includeServer(), new TagPaintingVariant(pack, event.getLookupProvider(), event.getExistingFileHelper()));
 
         // Registry Based Stuff
         DatapackBuiltinEntriesProvider datapackProvider = new RegistryDataGenerator(pack, event.getLookupProvider());

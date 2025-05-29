@@ -52,7 +52,6 @@ public final class TouhouLittleMaid {
         InitRecipes.RECIPE_TYPES.register(eventBus);
         InitCommand.ARGUMENT_TYPE.register(eventBus);
         InitPoi.POI_TYPES.register(eventBus);
-        InitPainting.PAINTING_VARIANTS.register(eventBus);
         InitTrigger.TRIGGERS.register(eventBus);
         InitDataAttachment.ATTACHMENT_TYPES.register(eventBus);
         InitDataComponent.DATA_COMPONENTS.register(eventBus);
